@@ -1,12 +1,5 @@
-import { EntityList } from "@/components/ui/EntityList";
+import { GamesManager } from "@/components/games/GamesManager";
 
 export default function Page() {
-  return (
-    <EntityList
-      title="Games"
-      description="Tela inicial de administração da coleção games."
-      collection="games"
-      fields={["id", "slug", "status", "sourceIds", "createdAt", "updatedAt"]}
-    />
-  );
+  return <GamesManager />;
 }
