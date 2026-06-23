@@ -22,7 +22,7 @@ export type Game = BaseDocument & {
   starters?: string[];
   substitutes?: string[];
   participated?: string[];
-  goals?: Array<{ personId: string; team: "jaragua" | "opponent"; time: string }>;
+  goals?: Array<{ personId: string; team: "jaragua" | "opponent"; time?: string }>;
   referees?: Array<{ name: string; country?: string }>;
   notes?: string;
   statistics?: { counted: boolean };

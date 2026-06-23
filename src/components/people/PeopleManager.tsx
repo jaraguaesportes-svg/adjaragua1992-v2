@@ -90,6 +90,9 @@ export function PeopleManager() {
               <th>Apelido</th>
               <th>Nome completo</th>
               <th>Papel principal</th>
+              <th>J</th>
+              <th>Gols</th>
+              <th>V-E-D</th>
               <th>Status</th>
               <th>Completude</th>
               <th></th>
@@ -101,6 +104,9 @@ export function PeopleManager() {
                 <td>{person.nickname}</td>
                 <td>{person.fullName ?? "—"}</td>
                 <td>{person.primaryRole}</td>
+                <td>{person.statistics?.games ?? 0}</td>
+                <td>{person.statistics?.goals ?? 0}</td>
+                <td>{person.statistics?.wins ?? 0}-{person.statistics?.draws ?? 0}-{person.statistics?.losses ?? 0}</td>
                 <td>{person.status}</td>
                 <td>{person.completeness ?? 0}%</td>
                 <td>
@@ -121,7 +127,7 @@ export function PeopleManager() {
             ))}
             {people.length === 0 && (
               <tr>
-                <td colSpan={6}>Nenhuma pessoa cadastrada ainda.</td>
+                <td colSpan={9}>Nenhuma pessoa cadastrada ainda.</td>
               </tr>
             )}
           </tbody>
