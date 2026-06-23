@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createDocument, archiveDocument, listCollection, upsertDocument } from "@/lib/services/firestore";
+import { archiveDocument, createDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
 import type { Game } from "@/types/games";
 import { deriveResult, deriveGameSlug, type GameInput } from "@/lib/schemas/games";
 import { GameForm } from "./GameForm";
@@ -32,6 +32,10 @@ function buildGamePayload(data: GameInput) {
   };
 }
 
+function gameLabel(data: { date: string; opponentId: string }) {
+  return `${data.date} x ${data.opponentId}`;
+}
+
 export function GamesManager() {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,21 +61,29 @@ export function GamesManager() {
   }, []);
 
   async function handleCreate(data: GameInput) {
-    await createDocument("games", buildGamePayload(data));
+    await createDocument("games", buildGamePayload(data), gameLabel(data));
     setShowForm(false);
     await refresh();
   }
 
   async function handleUpdate(data: GameInput) {
     if (!editing) return;
-    await upsertDocument("games", editing.id, buildGamePayload(data));
+    await upsertDocument("games", editing.id, buildGamePayload(data), {
+      entityName: gameLabel(data),
+      before: editing,
+    });
     setEditing(null);
     await refresh();
   }
 
   async function handleArchive(game: Game) {
     if (!confirm(`Arquivar jogo de ${game.date}?`)) return;
-    await archiveDocument("games", game.id);
+    await archiveDocument("games", game.id, gameLabel(game));
+    await refresh();
+  }
+
+  async function handleRestore(game: Game) {
+    await restoreDocument("games", game.id, gameLabel(game));
     await refresh();
   }
 
@@ -123,9 +135,15 @@ export function GamesManager() {
                   <button className="btn-link" onClick={() => { setShowForm(false); setEditing(game); }}>
                     Editar
                   </button>
-                  <button className="btn-link" onClick={() => handleArchive(game)}>
-                    Arquivar
-                  </button>
+                  {game.status === "archived" ? (
+                    <button className="btn-link" onClick={() => handleRestore(game)}>
+                      Restaurar
+                    </button>
+                  ) : (
+                    <button className="btn-link" onClick={() => handleArchive(game)}>
+                      Arquivar
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

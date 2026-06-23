@@ -11,7 +11,7 @@ service cloud.firestore {
     match /cities/{docId} { allow read: if true; allow write: if signedIn(); }
     match /sources/{docId} { allow read: if true; allow write: if signedIn(); }
     match /photos/{docId} { allow read: if true; allow write: if signedIn(); }
-    match /audits/{docId} { allow read, write: if signedIn(); }
+    match /audits/{docId} { allow read: if signedIn(); allow create: if signedIn(); allow update, delete: if false; }
     match /users/{docId} { allow read, write: if signedIn() && request.auth.uid == docId; }
   }
 }

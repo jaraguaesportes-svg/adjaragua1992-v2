@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createDocument, archiveDocument, listCollection, upsertDocument } from "@/lib/services/firestore";
+import { archiveDocument, createDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
 import type { Person } from "@/types/people";
 import { derivePersonSlug, type PersonInput } from "@/lib/schemas/people";
 import { PersonForm } from "./PersonForm";
@@ -31,21 +31,31 @@ export function PeopleManager() {
   }, []);
 
   async function handleCreate(data: PersonInput) {
-    await createDocument("people", { ...data, slug: derivePersonSlug(data.nickname, data.fullName) });
+    await createDocument("people", { ...data, slug: derivePersonSlug(data.nickname, data.fullName) }, data.nickname);
     setShowForm(false);
     await refresh();
   }
 
   async function handleUpdate(data: PersonInput) {
     if (!editing) return;
-    await upsertDocument("people", editing.id, { ...data, slug: derivePersonSlug(data.nickname, data.fullName) });
+    await upsertDocument(
+      "people",
+      editing.id,
+      { ...data, slug: derivePersonSlug(data.nickname, data.fullName) },
+      { entityName: data.nickname, before: editing }
+    );
     setEditing(null);
     await refresh();
   }
 
   async function handleArchive(person: Person) {
     if (!confirm(`Arquivar "${person.nickname}"?`)) return;
-    await archiveDocument("people", person.id);
+    await archiveDocument("people", person.id, person.nickname);
+    await refresh();
+  }
+
+  async function handleRestore(person: Person) {
+    await restoreDocument("people", person.id, person.nickname);
     await refresh();
   }
 
@@ -97,9 +107,15 @@ export function PeopleManager() {
                   <button className="btn-link" onClick={() => { setShowForm(false); setEditing(person); }}>
                     Editar
                   </button>
-                  <button className="btn-link" onClick={() => handleArchive(person)}>
-                    Arquivar
-                  </button>
+                  {person.status === "archived" ? (
+                    <button className="btn-link" onClick={() => handleRestore(person)}>
+                      Restaurar
+                    </button>
+                  ) : (
+                    <button className="btn-link" onClick={() => handleArchive(person)}>
+                      Arquivar
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
