@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { archiveDocument, createDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
 import { recalculateStatisticsForGameParticipants } from "@/lib/services/statistics";
+import { migrateLegacyPeopleReferencesInGames } from "@/lib/services/migratePeople";
 import type { Game } from "@/types/games";
 import { deriveResult, deriveGameSlug, type GameInput } from "@/lib/schemas/games";
 import { GameForm } from "./GameForm";
@@ -31,6 +32,8 @@ export function GamesManager() {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Game | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [migrating, setMigrating] = useState(false);
+  const [migrationResult, setMigrationResult] = useState<string | null>(null);
 
   async function refresh() {
     setLoading(true);
@@ -85,6 +88,23 @@ export function GamesManager() {
     await refresh();
   }
 
+  async function handleMigrate() {
+    if (!confirm("Corrigir pessoas de jogos antigos (criar/vincular pessoas reais a partir dos nomes digitados)?")) return;
+    setMigrating(true);
+    setMigrationResult(null);
+    try {
+      const result = await migrateLegacyPeopleReferencesInGames();
+      setMigrationResult(
+        `Pronto: ${result.createdCount} pessoa(s) criada(s), ${result.updatedGamesCount} jogo(s) corrigido(s), ${result.affectedPeople} pessoa(s) com estatísticas recalculadas.`
+      );
+      await refresh();
+    } catch (err) {
+      setMigrationResult(err instanceof Error ? `Erro: ${err.message}` : "Erro desconhecido na migração.");
+    } finally {
+      setMigrating(false);
+    }
+  }
+
   return (
     <section className="card">
       <div className="actions">
@@ -93,6 +113,13 @@ export function GamesManager() {
           {showForm ? "Fechar" : "Novo registro"}
         </button>
       </div>
+
+      <div className="actions">
+        <button className="btn-secondary" onClick={handleMigrate} disabled={migrating}>
+          {migrating ? "Corrigindo..." : "Corrigir pessoas de jogos antigos"}
+        </button>
+      </div>
+      {migrationResult && <p>{migrationResult}</p>}
 
       {showForm && !editing && (
         <GameForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
