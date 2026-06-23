@@ -30,3 +30,18 @@ export const personSchema = z.object({
 });
 
 export type PersonInput = z.infer<typeof personSchema>;
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+/** Deriva o slug oficial da pessoa, conforme Volume II 4.6: apelido-nome-completo. */
+export function derivePersonSlug(nickname: string, fullName?: string): string {
+  const parts = [nickname, fullName].filter(Boolean) as string[];
+  return slugify(parts.join("-"));
+}

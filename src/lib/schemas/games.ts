@@ -44,3 +44,37 @@ export function deriveResult(jaraguaGoals: number, opponentGoals: number): "win"
   if (jaraguaGoals < opponentGoals) return "loss";
   return "draw";
 }
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+/**
+ * Deriva o slug oficial do jogo, conforme Volume II 3.10:
+ * aaaa-mm-dd-mandante-placar-x-placar-visitante (sem prefixo "ad").
+ *
+ * Observação: como a coleção opponents ainda não existe nas telas, usamos o
+ * próprio opponentId como nome do adversário no slug. Quando opponents existir,
+ * isso deve ser substituído pelo nome/slug real do adversário.
+ */
+export function deriveGameSlug(params: {
+  date: string;
+  homeAway: "home" | "away" | "neutral";
+  opponentId: string;
+  jaraguaGoals: number;
+  opponentGoals: number;
+}): string {
+  const { date, homeAway, opponentId, jaraguaGoals, opponentGoals } = params;
+  const opponentSlug = slugify(opponentId);
+  const isAway = homeAway === "away";
+  const mandante = isAway ? opponentSlug : "jaragua";
+  const visitante = isAway ? "jaragua" : opponentSlug;
+  const placarMandante = isAway ? opponentGoals : jaraguaGoals;
+  const placarVisitante = isAway ? jaraguaGoals : opponentGoals;
+  return `${date}-${mandante}-${placarMandante}-x-${placarVisitante}-${visitante}`;
+}

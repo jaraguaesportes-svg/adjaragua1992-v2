@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createDocument, archiveDocument, listCollection, upsertDocument } from "@/lib/services/firestore";
 import type { Person } from "@/types/people";
-import type { PersonInput } from "@/lib/schemas/people";
+import { derivePersonSlug, type PersonInput } from "@/lib/schemas/people";
 import { PersonForm } from "./PersonForm";
 
 export function PeopleManager() {
@@ -31,14 +31,14 @@ export function PeopleManager() {
   }, []);
 
   async function handleCreate(data: PersonInput) {
-    await createDocument("people", data);
+    await createDocument("people", { ...data, slug: derivePersonSlug(data.nickname, data.fullName) });
     setShowForm(false);
     await refresh();
   }
 
   async function handleUpdate(data: PersonInput) {
     if (!editing) return;
-    await upsertDocument("people", editing.id, data);
+    await upsertDocument("people", editing.id, { ...data, slug: derivePersonSlug(data.nickname, data.fullName) });
     setEditing(null);
     await refresh();
   }

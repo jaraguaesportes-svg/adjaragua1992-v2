@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createDocument, archiveDocument, listCollection, upsertDocument } from "@/lib/services/firestore";
 import type { Game } from "@/types/games";
-import { deriveResult, type GameInput } from "@/lib/schemas/games";
+import { deriveResult, deriveGameSlug, type GameInput } from "@/lib/schemas/games";
 import { GameForm } from "./GameForm";
 
 function textToIds(text?: string): string[] {
@@ -18,6 +18,13 @@ function buildGamePayload(data: GameInput) {
   const { startersText, substitutesText, participatedText, ...rest } = data;
   return {
     ...rest,
+    slug: deriveGameSlug({
+      date: data.date,
+      homeAway: data.homeAway,
+      opponentId: data.opponentId,
+      jaraguaGoals: Number(data.jaraguaGoals),
+      opponentGoals: Number(data.opponentGoals),
+    }),
     starters: textToIds(startersText),
     substitutes: textToIds(substitutesText),
     participated: textToIds(participatedText),
