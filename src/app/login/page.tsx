@@ -21,11 +21,9 @@ export default function LoginPage() {
       await signInWithPopup(auth, new GoogleAuthProvider());
       router.push("/admin");
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? "Não foi possível entrar com Google. Tente novamente."
-          : "Erro desconhecido"
-      );
+      const code = (err as { code?: string })?.code ?? "desconhecido";
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`Erro ao entrar com Google (${code}): ${message}`);
     } finally {
       setLoading(false);
     }
