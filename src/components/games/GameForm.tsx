@@ -164,11 +164,24 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
       <div className="grid grid-2">
         <label>
           Público presente
-          <input type="number" min={0} {...register("attendance", { valueAsNumber: true })} />
+          <input
+            type="number"
+            min={0}
+            {...register("attendance", {
+              setValueAs: (v) => (v === "" || v === null ? undefined : Number(v)),
+            })}
+          />
         </label>
         <label>
           Renda (R$)
-          <input type="number" min={0} step="0.01" {...register("revenue", { valueAsNumber: true })} />
+          <input
+            type="number"
+            min={0}
+            step="0.01"
+            {...register("revenue", {
+              setValueAs: (v) => (v === "" || v === null ? undefined : Number(v)),
+            })}
+          />
         </label>
       </div>
 
