@@ -103,6 +103,7 @@ export function CompetitionsManager() {
               <th>Sigla</th>
               <th>Tipo</th>
               <th>Nível</th>
+              <th>Jogos</th>
               <th>Status</th>
               <th></th>
             </tr>
@@ -114,6 +115,7 @@ export function CompetitionsManager() {
                 <td>{item.shortName}</td>
                 <td>{item.competitionType}</td>
                 <td>{item.level}</td>
+                <td>{item.statistics?.games ?? 0}</td>
                 <td>{item.status}</td>
                 <td>
                   <button className="btn-link" onClick={() => { setShowForm(false); setEditing(item); }}>
@@ -133,7 +135,7 @@ export function CompetitionsManager() {
             ))}
             {items.length === 0 && (
               <tr>
-                <td colSpan={6}>Nenhuma competição cadastrada ainda.</td>
+                <td colSpan={7}>Nenhuma competição cadastrada ainda.</td>
               </tr>
             )}
           </tbody>

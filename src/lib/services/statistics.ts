@@ -1,6 +1,7 @@
-import { listCollection, upsertDocument } from "@/lib/services/firestore";
+import { getDocument, listCollection, upsertDocument } from "@/lib/services/firestore";
 import type { Game } from "@/types/games";
 import type { Person } from "@/types/people";
+import type { Competition } from "@/types/competitions";
 
 /**
  * Recalcula as estatísticas de uma pessoa a partir da coleção games,
@@ -57,13 +58,29 @@ export async function recalculateStatisticsForGameParticipants(game: Partial<Gam
   game.participated?.forEach((id) => ids.add(id));
   game.goals?.forEach((g) => ids.add(g.personId));
 
-  if (ids.size === 0) return;
-
   const allGames = await listCollection<Game>("games");
   for (const personId of ids) {
     if (!personId) continue;
     await recalculatePersonStatistics(personId, allGames);
   }
+
+  if (game.competitionId) {
+    await recalculateCompetitionStatistics(game.competitionId, allGames);
+  }
+}
+
+/** Recalcula a coleção games (statistics.games) de uma competição, conforme Volume V 4.20. */
+export async function recalculateCompetitionStatistics(competitionId: string, allGames?: Game[]) {
+  const games = allGames ?? (await listCollection<Game>("games"));
+  const activeGames = games.filter((g) => g.status === "active" && g.competitionId === competitionId);
+  const competition = await getDocument<Competition>("competitions", competitionId);
+  const statistics = {
+    editions: competition?.statistics?.editions ?? 0,
+    games: activeGames.length,
+    titles: competition?.statistics?.titles ?? 0,
+  };
+  await upsertDocument("competitions", competitionId, { statistics });
+  return statistics;
 }
 
 /** Recalcula as estatísticas de todas as pessoas que aparecem em algum jogo. Use com moderação (custo O(pessoas×jogos)). */
