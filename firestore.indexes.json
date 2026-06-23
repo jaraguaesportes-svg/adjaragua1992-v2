@@ -1,0 +1,8 @@
+{
+  "indexes": [
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "editionId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" } ] },
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "opponentId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" } ] },
+    { "collectionGroup": "people", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "primaryRole", "order": "ASCENDING" }, { "fieldPath": "nickname", "order": "ASCENDING" } ] }
+  ],
+  "fieldOverrides": []
+}
