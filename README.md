@@ -25,3 +25,5 @@ npm run dev
 3. Habilitar Authentication.
 4. Habilitar Firestore.
 5. Subir regras de segurança.
+
+_Última atualização: deploy disparado para incluir pasta src._
