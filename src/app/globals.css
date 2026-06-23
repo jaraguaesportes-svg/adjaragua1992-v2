@@ -21,3 +21,13 @@ form .actions { justify-content: flex-start; }
 table { width: 100%; border-collapse: collapse; margin-top: 12px; }
 th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
 nav { display: flex; gap: 12px; flex-wrap: wrap; }
+.person-picker { position: relative; }
+.person-picker-dropdown { position: relative; background: white; border: 1px solid #d1d5db; border-radius: 8px; margin-top: 4px; max-height: 260px; overflow-y: auto; z-index: 10; }
+.person-picker-option { display: block; width: 100%; text-align: left; padding: 8px 10px; border: none; background: none; cursor: pointer; font-size: 14px; }
+.person-picker-option:hover { background: #f3f4f6; }
+.person-picker-selected { display: flex; align-items: center; gap: 8px; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+.person-picker-create { padding: 10px; border-top: 1px solid #e5e7eb; display: grid; gap: 8px; }
+.person-picker-create .hint { font-size: 12px; color: #6b7280; font-weight: 400; margin: 0; }
+.person-chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.person-chip { display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+.person-chip button { border: none; background: none; cursor: pointer; font-size: 14px; line-height: 1; color: #6b7280; }

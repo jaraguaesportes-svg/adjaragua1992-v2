@@ -7,18 +7,9 @@ import type { Game } from "@/types/games";
 import { deriveResult, deriveGameSlug, type GameInput } from "@/lib/schemas/games";
 import { GameForm } from "./GameForm";
 
-function textToIds(text?: string): string[] {
-  if (!text) return [];
-  return text
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
 function buildGamePayload(data: GameInput) {
-  const { startersText, substitutesText, participatedText, ...rest } = data;
   return {
-    ...rest,
+    ...data,
     slug: deriveGameSlug({
       date: data.date,
       homeAway: data.homeAway,
@@ -26,9 +17,6 @@ function buildGamePayload(data: GameInput) {
       jaraguaGoals: Number(data.jaraguaGoals),
       opponentGoals: Number(data.opponentGoals),
     }),
-    starters: textToIds(startersText),
-    substitutes: textToIds(substitutesText),
-    participated: textToIds(participatedText),
     result: deriveResult(Number(data.jaraguaGoals), Number(data.opponentGoals)),
   };
 }

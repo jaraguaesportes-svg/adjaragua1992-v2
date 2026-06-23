@@ -1,19 +1,17 @@
 "use client";
 
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { gameSchema, type GameInput } from "@/lib/schemas/games";
 import type { Game } from "@/types/games";
+import { PersonPicker } from "@/components/people/PersonPicker";
+import { PersonMultiPicker } from "@/components/people/PersonMultiPicker";
 
 type GameFormProps = {
   initialValues?: Game;
   onSubmit: (data: GameInput) => Promise<void>;
   onCancel?: () => void;
 };
-
-function idsToText(ids?: string[]) {
-  return ids?.join(", ") ?? "";
-}
 
 export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
   const {
@@ -42,14 +40,23 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
           attendance: initialValues.attendance,
           revenue: initialValues.revenue,
           coachId: initialValues.coachId,
-          startersText: idsToText(initialValues.starters),
-          substitutesText: idsToText(initialValues.substitutes),
-          participatedText: idsToText(initialValues.participated),
+          starters: initialValues.starters ?? [],
+          substitutes: initialValues.substitutes ?? [],
+          participated: initialValues.participated ?? [],
           goals: initialValues.goals,
           referees: initialValues.referees,
           notes: initialValues.notes,
         }
-      : { homeAway: "home", jaraguaGoals: 0, opponentGoals: 0, goals: [], referees: [] },
+      : {
+          homeAway: "home",
+          jaraguaGoals: 0,
+          opponentGoals: 0,
+          goals: [],
+          referees: [],
+          starters: [],
+          substitutes: [],
+          participated: [],
+        },
   });
 
   const goalsArray = useFieldArray({ control, name: "goals" });
@@ -100,8 +107,14 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
           {errors.opponentId && <span className="error">{errors.opponentId.message}</span>}
         </label>
         <label>
-          Técnico (ID)
-          <input {...register("coachId")} placeholder="ID da coleção people" />
+          Técnico
+          <Controller
+            control={control}
+            name="coachId"
+            render={({ field }) => (
+              <PersonPicker value={field.value} onChange={field.onChange} placeholder="Buscar treinador..." />
+            )}
+          />
         </label>
       </div>
 
@@ -186,25 +199,48 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
       </div>
 
       <label>
-        Titulares (IDs separados por vírgula)
-        <input {...register("startersText")} placeholder="person001, person002, ..." />
+        Titulares
+        <Controller
+          control={control}
+          name="starters"
+          render={({ field }) => (
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta titular..." />
+          )}
+        />
       </label>
+
       <label>
-        Reservas que entraram (IDs separados por vírgula)
-        <input {...register("substitutesText")} placeholder="person006, person007" />
+        Reservas que entraram
+        <Controller
+          control={control}
+          name="substitutes"
+          render={({ field }) => (
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta reserva..." />
+          )}
+        />
       </label>
+
       <label>
-        Participaram, sem distinção titular/reserva (IDs separados por vírgula)
-        <input {...register("participatedText")} />
+        Demais participantes (sem distinção titular/reserva)
+        <Controller
+          control={control}
+          name="participated"
+          render={({ field }) => (
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar pessoa..." />
+          )}
+        />
       </label>
 
       <fieldset>
         <legend>Gols</legend>
         {goalsArray.fields.map((field, index) => (
           <div key={field.id} className="grid grid-2">
-            <input
-              {...register(`goals.${index}.personId`)}
-              placeholder="ID da pessoa que marcou"
+            <Controller
+              control={control}
+              name={`goals.${index}.personId`}
+              render={({ field: f }) => (
+                <PersonPicker value={f.value} onChange={(v) => f.onChange(v ?? "")} placeholder="Quem marcou?" />
+              )}
             />
             <select {...register(`goals.${index}.team`)}>
               <option value="jaragua">Jaraguá</option>
