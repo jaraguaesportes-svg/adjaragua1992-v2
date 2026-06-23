@@ -6,6 +6,23 @@ function currentUser() {
   return { userId: user?.uid ?? "desconhecido", userName: user?.displayName ?? user?.email ?? "Desconhecido" };
 }
 
+/** Remove chaves com valor undefined, recursivamente — o Firestore rejeita undefined em qualquer campo. */
+function sanitize<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((v) => sanitize(v)) as unknown as T;
+  }
+  if (value !== null && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      if (val !== undefined) {
+        result[key] = sanitize(val);
+      }
+    }
+    return result as T;
+  }
+  return value;
+}
+
 /**
  * Grava um registro permanente na coleção `audits`, conforme Volume V cap. 11.
  * Auditoria é obrigatória para toda criação, edição, arquivamento, restauração e mesclagem (Volume I 3.6 / Volume IV 9).
@@ -21,7 +38,7 @@ async function writeAudit(params: {
   severity?: "low" | "medium" | "high" | "critical";
 }) {
   const { userId, userName } = currentUser();
-  await addDoc(collection(db, "audits"), {
+  await addDoc(collection(db, "audits"), sanitize({
     timestamp: new Date().toISOString(),
     userId,
     userName,
@@ -36,7 +53,7 @@ async function writeAudit(params: {
     reversible: params.action !== "delete",
     severity: params.severity ?? "low",
     retentionLevel: "permanent",
-  });
+  }));
 }
 
 export async function listCollection<T>(collectionName: string): Promise<T[]> {
@@ -47,8 +64,9 @@ export async function listCollection<T>(collectionName: string): Promise<T[]> {
 export async function createDocument(collectionName: string, data: Record<string, unknown>, entityName?: string) {
   const now = new Date().toISOString();
   const { userId } = currentUser();
+  const cleanData = sanitize(data);
   const ref = await addDoc(collection(db, collectionName), {
-    ...data,
+    ...cleanData,
     status: "active",
     createdAt: now,
     updatedAt: now,
@@ -61,7 +79,7 @@ export async function createDocument(collectionName: string, data: Record<string
     entityType: collectionName,
     entityId: ref.id,
     entityName,
-    after: data,
+    after: cleanData,
     severity: "low",
   });
   return ref;
@@ -75,9 +93,10 @@ export async function upsertDocument(
 ) {
   const now = new Date().toISOString();
   const { userId } = currentUser();
+  const cleanData = sanitize(data);
   const result = await setDoc(
     doc(db, collectionName, id),
-    { id, ...data, updatedAt: now, updatedBy: userId },
+    { id, ...cleanData, updatedAt: now, updatedBy: userId },
     { merge: true }
   );
   await writeAudit({
@@ -86,8 +105,8 @@ export async function upsertDocument(
     entityId: id,
     entityName: options?.entityName,
     before: options?.before,
-    after: data,
-    changedFields: Object.keys(data),
+    after: cleanData,
+    changedFields: Object.keys(cleanData),
     severity: "medium",
   });
   return result;
