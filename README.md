@@ -27,3 +27,5 @@ npm run dev
 5. Subir regras de segurança.
 
 _Última atualização: deploy disparado para incluir pasta src._
+
+_Deploy disparado após configurar variáveis Firebase._
