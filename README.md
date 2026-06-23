@@ -33,3 +33,5 @@ _Deploy disparado após configurar variáveis Firebase._
 _Deploy disparado após corrigir valores das variáveis Firebase no Cloudflare._
 
 _Deploy disparado após habilitar nodejs_compat._
+
+_Deploy disparado após corrigir typo na API key (H em vez de M)._
