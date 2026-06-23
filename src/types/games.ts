@@ -1,0 +1,29 @@
+import type { BaseDocument } from "./core";
+
+export type Game = BaseDocument & {
+  date: string;
+  time?: string;
+  timezone?: string;
+  competitionId: string;
+  editionId: string;
+  opponentId: string;
+  venueId: string;
+  cityId: string;
+  country?: string;
+  homeAway: "home" | "away" | "neutral";
+  phase?: string;
+  round?: string;
+  jaraguaGoals: number;
+  opponentGoals: number;
+  result: "win" | "draw" | "loss";
+  attendance?: number;
+  revenue?: number;
+  coachId?: string;
+  starters?: string[];
+  substitutes?: string[];
+  participated?: string[];
+  goals?: Array<{ personId: string; team: "jaragua" | "opponent"; time: string }>;
+  referees?: Array<{ name: string; country?: string }>;
+  notes?: string;
+  statistics?: { counted: boolean };
+};
