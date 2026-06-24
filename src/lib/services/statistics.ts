@@ -67,6 +67,9 @@ export async function recalculateStatisticsForGameParticipants(game: Partial<Gam
   if (game.competitionId) {
     await recalculateCompetitionStatistics(game.competitionId, allGames);
   }
+  if (game.editionId) {
+    await recalculateEditionStatistics(game.editionId, allGames);
+  }
 }
 
 /** Recalcula a coleção games (statistics.games) de uma competição, conforme Volume V 4.20. */
@@ -80,6 +83,26 @@ export async function recalculateCompetitionStatistics(competitionId: string, al
     titles: competition?.statistics?.titles ?? 0,
   };
   await upsertDocument("competitions", competitionId, { statistics });
+  return statistics;
+}
+
+/** Recalcula statistics da edição (jogos, V-E-D, gols), conforme Volume V 5.17. */
+export async function recalculateEditionStatistics(editionId: string, allGames?: Game[]) {
+  const games = allGames ?? (await listCollection<Game>("games"));
+  const activeGames = games.filter((g) => g.status === "active" && g.editionId === editionId);
+  const statistics = activeGames.reduce(
+    (acc, g) => {
+      acc.games += 1;
+      if (g.result === "win") acc.wins += 1;
+      else if (g.result === "draw") acc.draws += 1;
+      else if (g.result === "loss") acc.losses += 1;
+      acc.goalsFor += g.jaraguaGoals;
+      acc.goalsAgainst += g.opponentGoals;
+      return acc;
+    },
+    { games: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 }
+  );
+  await upsertDocument("editions", editionId, { statistics });
   return statistics;
 }
 

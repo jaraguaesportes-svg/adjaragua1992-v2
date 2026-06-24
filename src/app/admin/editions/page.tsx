@@ -1,12 +1,5 @@
-import { EntityList } from "@/components/ui/EntityList";
+import { EditionsManager } from "@/components/editions/EditionsManager";
 
 export default function Page() {
-  return (
-    <EntityList
-      title="Editions"
-      description="Tela inicial de administração da coleção editions."
-      collection="editions"
-      fields={["id", "slug", "status", "sourceIds", "createdAt", "updatedAt"]}
-    />
-  );
+  return <EditionsManager />;
 }
