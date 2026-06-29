@@ -70,6 +70,49 @@ export async function recalculateStatisticsForGameParticipants(game: Partial<Gam
   if (game.editionId) {
     await recalculateEditionStatistics(game.editionId, allGames);
   }
+  if (game.opponentId) {
+    await recalculateOpponentStatistics(game.opponentId, allGames);
+  }
+}
+
+/** Recalcula statistics e confrontationStatistics do adversário, conforme Volume V 6.12/6.13. */
+export async function recalculateOpponentStatistics(opponentId: string, allGames?: Game[]) {
+  const games = allGames ?? (await listCollection<Game>("games"));
+  const activeGames = games.filter((g) => g.status === "active" && g.opponentId === opponentId);
+
+  const statistics = { games: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 };
+  const confrontationStatistics = {
+    matches: 0,
+    jaraguaWins: 0,
+    draws: 0,
+    opponentWins: 0,
+    jaraguaGoals: 0,
+    opponentGoals: 0,
+  };
+
+  for (const g of activeGames) {
+    statistics.games += 1;
+    confrontationStatistics.matches += 1;
+    // "statistics" representa o desempenho do adversário (visão invertida: vitória do
+    // adversário é quando o Jaraguá perde, e vice-versa).
+    if (g.result === "win") {
+      statistics.losses += 1;
+      confrontationStatistics.jaraguaWins += 1;
+    } else if (g.result === "loss") {
+      statistics.wins += 1;
+      confrontationStatistics.opponentWins += 1;
+    } else {
+      statistics.draws += 1;
+      confrontationStatistics.draws += 1;
+    }
+    statistics.goalsFor += g.opponentGoals;
+    statistics.goalsAgainst += g.jaraguaGoals;
+    confrontationStatistics.jaraguaGoals += g.jaraguaGoals;
+    confrontationStatistics.opponentGoals += g.opponentGoals;
+  }
+
+  await upsertDocument("opponents", opponentId, { statistics, confrontationStatistics });
+  return { statistics, confrontationStatistics };
 }
 
 /** Recalcula a coleção games (statistics.games) de uma competição, conforme Volume V 4.20. */

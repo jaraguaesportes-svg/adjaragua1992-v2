@@ -1,12 +1,5 @@
-import { EntityList } from "@/components/ui/EntityList";
+import { OpponentsManager } from "@/components/opponents/OpponentsManager";
 
 export default function Page() {
-  return (
-    <EntityList
-      title="Opponents"
-      description="Tela inicial de administração da coleção opponents."
-      collection="opponents"
-      fields={["id", "slug", "status", "sourceIds", "createdAt", "updatedAt"]}
-    />
-  );
+  return <OpponentsManager />;
 }
