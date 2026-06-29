@@ -29,17 +29,22 @@ export function PersonMultiPicker({ value, onChange, placeholder }: PersonMultiP
 
   return (
     <div>
-      <div className="person-chip-list">
-        {value.map((id) => {
-          const person = people.find((p) => p.id === id);
-          return (
-            <span key={id} className="person-chip">
-              {person?.nickname ?? id}
-              <button type="button" onClick={() => remove(id)}>×</button>
-            </span>
-          );
-        })}
-      </div>
+      {value.length > 0 && (
+        <ol className="person-line-list">
+          {value.map((id) => {
+            const person = people.find((p) => p.id === id);
+            return (
+              <li key={id} className="person-line-item">
+                <span>{person?.nickname ?? `(carregando: ${id})`}</span>
+                {person?.fullName && <span className="person-line-fullname">{person.fullName}</span>}
+                <button type="button" className="btn-link" onClick={() => remove(id)}>
+                  Remover
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      )}
       <PersonPicker value={undefined} onChange={add} placeholder={placeholder} />
     </div>
   );
