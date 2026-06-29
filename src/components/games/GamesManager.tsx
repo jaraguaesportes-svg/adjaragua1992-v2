@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { archiveDocument, createDocument, getDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
 import { recalculateStatisticsForGameParticipants } from "@/lib/services/statistics";
-import { migrateLegacyPeopleReferencesInGames, migrateLegacyOpponentReferencesInGames } from "@/lib/services/migratePeople";
+import { migrateLegacyPeopleReferencesInGames, migrateLegacyOpponentReferencesInGames, migrateLegacyVenueReferencesInGames } from "@/lib/services/migratePeople";
 import type { Game } from "@/types/games";
 import type { Opponent } from "@/types/opponents";
+import type { Venue } from "@/types/venues";
 import { deriveResult, deriveGameSlug, type GameInput } from "@/lib/schemas/games";
 import { GameForm } from "./GameForm";
 
@@ -35,6 +36,7 @@ async function buildGamePayload(data: GameInput) {
 export function GamesManager() {
   const [games, setGames] = useState<Game[]>([]);
   const [opponentNames, setOpponentNames] = useState<Record<string, string>>({});
+  const [venueNames, setVenueNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Game | null>(null);
@@ -46,12 +48,14 @@ export function GamesManager() {
     setLoading(true);
     setError(null);
     try {
-      const [data, opponents] = await Promise.all([
+      const [data, opponents, venues] = await Promise.all([
         listCollection<Game>("games"),
         listCollection<Opponent>("opponents"),
+        listCollection<Venue>("venues"),
       ]);
       setGames(data);
       setOpponentNames(Object.fromEntries(opponents.map((o) => [o.id, o.name])));
+      setVenueNames(Object.fromEntries(venues.map((v) => [v.id, v.name])));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao carregar jogos");
     } finally {
@@ -104,15 +108,17 @@ export function GamesManager() {
   }
 
   async function handleMigrate() {
-    if (!confirm("Corrigir pessoas e adversários de jogos antigos (criar/vincular registros reais a partir dos nomes digitados)?")) return;
+    if (!confirm("Corrigir pessoas, adversários e locais de jogos antigos (criar/vincular registros reais a partir dos nomes digitados)?")) return;
     setMigrating(true);
     setMigrationResult(null);
     try {
       const peopleResult = await migrateLegacyPeopleReferencesInGames();
       const opponentResult = await migrateLegacyOpponentReferencesInGames();
+      const venueResult = await migrateLegacyVenueReferencesInGames();
       setMigrationResult(
         `Pessoas: ${peopleResult.createdCount} criada(s), ${peopleResult.updatedGamesCount} jogo(s) corrigido(s). ` +
-        `Adversários: ${opponentResult.createdCount} criado(s), ${opponentResult.updatedGamesCount} jogo(s) corrigido(s).`
+        `Adversários: ${opponentResult.createdCount} criado(s), ${opponentResult.updatedGamesCount} jogo(s) corrigido(s). ` +
+        `Locais: ${venueResult.createdCount} criado(s), ${venueResult.updatedGamesCount} jogo(s) corrigido(s).`
       );
       await refresh();
     } catch (err) {
@@ -133,7 +139,7 @@ export function GamesManager() {
 
       <div className="actions">
         <button className="btn-secondary" onClick={handleMigrate} disabled={migrating}>
-          {migrating ? "Corrigindo..." : "Corrigir pessoas e adversários de jogos antigos"}
+          {migrating ? "Corrigindo..." : "Corrigir pessoas, adversários e locais de jogos antigos"}
         </button>
       </div>
       {migrationResult && <p>{migrationResult}</p>}
@@ -159,6 +165,7 @@ export function GamesManager() {
             <tr>
               <th>Data</th>
               <th>Adversário</th>
+              <th>Local</th>
               <th>Placar</th>
               <th>Resultado</th>
               <th>Status</th>
@@ -170,6 +177,7 @@ export function GamesManager() {
               <tr key={game.id}>
                 <td>{game.date}</td>
                 <td>{opponentNames[game.opponentId] ?? game.opponentId}</td>
+                <td>{venueNames[game.venueId] ?? game.venueId}</td>
                 <td>{game.jaraguaGoals} x {game.opponentGoals}</td>
                 <td>{game.result}</td>
                 <td>{game.status}</td>
@@ -191,7 +199,7 @@ export function GamesManager() {
             ))}
             {games.length === 0 && (
               <tr>
-                <td colSpan={6}>Nenhum jogo cadastrado ainda.</td>
+                <td colSpan={7}>Nenhum jogo cadastrado ainda.</td>
               </tr>
             )}
           </tbody>

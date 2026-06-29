@@ -1,10 +1,12 @@
 import { createDocument, listCollection, upsertDocument } from "@/lib/services/firestore";
 import { derivePersonSlug } from "@/lib/schemas/people";
 import { deriveOpponentSlug } from "@/lib/schemas/opponents";
+import { deriveVenueSlug } from "@/lib/schemas/venues";
 import type { Game } from "@/types/games";
 import type { Person } from "@/types/people";
 import type { Opponent } from "@/types/opponents";
-import { recalculatePersonStatistics, recalculateOpponentStatistics } from "@/lib/services/statistics";
+import type { Venue } from "@/types/venues";
+import { recalculatePersonStatistics, recalculateOpponentStatistics, recalculateVenueStatistics } from "@/lib/services/statistics";
 
 /**
  * Corrige jogos cadastrados antes de existir o seletor de pessoas: campos como
@@ -197,4 +199,70 @@ export async function migrateLegacyOpponentReferencesInGames() {
   }
 
   return { createdCount, updatedGamesCount, affectedOpponents: touchedOpponentIds.size };
+}
+
+/**
+ * Corrige jogos cuja referência de local (venueId) ainda é o nome digitado
+ * livremente, criados antes de existir o seletor de locais. Mesmo princípio
+ * das migrações de pessoas e adversários: reaproveita por nome exato, senão
+ * cria cadastro provisório (cityId fica vazio, a completar depois).
+ */
+export async function migrateLegacyVenueReferencesInGames() {
+  const [games, venues] = await Promise.all([
+    listCollection<Game>("games"),
+    listCollection<Venue>("venues"),
+  ]);
+
+  const idSet = new Set(venues.map((v) => v.id));
+  const byExactName = new Map<string, string>();
+  for (const v of venues) {
+    byExactName.set(v.name.trim().toLowerCase(), v.id);
+  }
+
+  let createdCount = 0;
+  let updatedGamesCount = 0;
+  const touchedVenueIds = new Set<string>();
+
+  for (const game of games) {
+    const raw = game.venueId;
+    if (!raw || idSet.has(raw)) continue;
+
+    const key = raw.trim().toLowerCase();
+    let resolved = byExactName.get(key);
+
+    if (!resolved) {
+      const ref = await createDocument(
+        "venues",
+        {
+          name: raw.trim(),
+          cityId: game.cityId ?? "",
+          country: "Brasil",
+          venueType: "gymnasium",
+          active: true,
+          slug: deriveVenueSlug(raw.trim()),
+        },
+        raw.trim()
+      );
+      idSet.add(ref.id);
+      byExactName.set(key, ref.id);
+      resolved = ref.id;
+      createdCount += 1;
+    }
+
+    await upsertDocument(
+      "games",
+      game.id,
+      { venueId: resolved },
+      { entityName: `${game.date} - ${raw}`, before: game }
+    );
+    updatedGamesCount += 1;
+    touchedVenueIds.add(resolved);
+  }
+
+  const freshGames = await listCollection<Game>("games");
+  for (const venueId of touchedVenueIds) {
+    await recalculateVenueStatistics(venueId, freshGames);
+  }
+
+  return { createdCount, updatedGamesCount, affectedVenues: touchedVenueIds.size };
 }

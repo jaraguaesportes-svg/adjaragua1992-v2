@@ -73,6 +73,9 @@ export async function recalculateStatisticsForGameParticipants(game: Partial<Gam
   if (game.opponentId) {
     await recalculateOpponentStatistics(game.opponentId, allGames);
   }
+  if (game.venueId) {
+    await recalculateVenueStatistics(game.venueId, allGames);
+  }
 }
 
 /** Recalcula statistics e confrontationStatistics do adversário, conforme Volume V 6.12/6.13. */
@@ -113,6 +116,45 @@ export async function recalculateOpponentStatistics(opponentId: string, allGames
 
   await upsertDocument("opponents", opponentId, { statistics, confrontationStatistics });
   return { statistics, confrontationStatistics };
+}
+
+/** Recalcula statistics, attendanceStatistics e datas extremas do local, conforme Volume V 7.19-7.21. */
+export async function recalculateVenueStatistics(venueId: string, allGames?: Game[]) {
+  const games = allGames ?? (await listCollection<Game>("games"));
+  const activeGames = games
+    .filter((g) => g.status === "active" && g.venueId === venueId)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const statistics = { games: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 };
+  let totalAttendance = 0;
+  let recordAttendance = 0;
+  let attendanceGamesCount = 0;
+
+  for (const g of activeGames) {
+    statistics.games += 1;
+    if (g.result === "win") statistics.wins += 1;
+    else if (g.result === "draw") statistics.draws += 1;
+    else if (g.result === "loss") statistics.losses += 1;
+    statistics.goalsFor += g.jaraguaGoals;
+    statistics.goalsAgainst += g.opponentGoals;
+    if (typeof g.attendance === "number") {
+      totalAttendance += g.attendance;
+      attendanceGamesCount += 1;
+      if (g.attendance > recordAttendance) recordAttendance = g.attendance;
+    }
+  }
+
+  const attendanceStatistics = {
+    totalAttendance,
+    averageAttendance: attendanceGamesCount > 0 ? Math.round(totalAttendance / attendanceGamesCount) : 0,
+    recordAttendance,
+  };
+
+  const firstGameDate = activeGames[0]?.date;
+  const lastGameDate = activeGames[activeGames.length - 1]?.date;
+
+  await upsertDocument("venues", venueId, { statistics, attendanceStatistics, firstGameDate, lastGameDate });
+  return { statistics, attendanceStatistics, firstGameDate, lastGameDate };
 }
 
 /** Recalcula a coleção games (statistics.games) de uma competição, conforme Volume V 4.20. */
