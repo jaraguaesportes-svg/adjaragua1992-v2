@@ -198,8 +198,8 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
         </label>
       </div>
 
-      <label>
-        Titulares
+      <fieldset>
+        <legend>Titulares</legend>
         <Controller
           control={control}
           name="starters"
@@ -207,10 +207,10 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta titular..." addLabel="+ Adicionar titular" />
           )}
         />
-      </label>
+      </fieldset>
 
-      <label>
-        Reservas que entraram
+      <fieldset>
+        <legend>Entraram</legend>
         <Controller
           control={control}
           name="substitutes"
@@ -218,10 +218,10 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta reserva..." addLabel="+ Adicionar reserva" />
           )}
         />
-      </label>
+      </fieldset>
 
-      <label>
-        Demais participantes (sem distinção titular/reserva)
+      <fieldset>
+        <legend>Jogaram</legend>
         <Controller
           control={control}
           name="participated"
@@ -229,7 +229,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar pessoa..." addLabel="+ Adicionar participante" />
           )}
         />
-      </label>
+      </fieldset>
 
       <fieldset>
         <legend>Gols</legend>
