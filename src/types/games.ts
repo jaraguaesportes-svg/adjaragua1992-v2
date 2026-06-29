@@ -22,6 +22,10 @@ export type Game = BaseDocument & {
   starters?: string[];
   substitutes?: string[];
   participated?: string[];
+  opponentCoachId?: string;
+  opponentStarters?: string[];
+  opponentSubstitutes?: string[];
+  opponentParticipated?: string[];
   goals?: Array<{ personId: string; team: "jaragua" | "opponent"; time?: string }>;
   referees?: Array<{ name: string; country?: string }>;
   notes?: string;

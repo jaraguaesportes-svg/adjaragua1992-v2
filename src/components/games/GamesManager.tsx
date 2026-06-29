@@ -14,6 +14,9 @@ function buildGamePayload(data: GameInput) {
     starters: (data.starters ?? []).filter(Boolean),
     substitutes: (data.substitutes ?? []).filter(Boolean),
     participated: (data.participated ?? []).filter(Boolean),
+    opponentStarters: (data.opponentStarters ?? []).filter(Boolean),
+    opponentSubstitutes: (data.opponentSubstitutes ?? []).filter(Boolean),
+    opponentParticipated: (data.opponentParticipated ?? []).filter(Boolean),
     slug: deriveGameSlug({
       date: data.date,
       homeAway: data.homeAway,

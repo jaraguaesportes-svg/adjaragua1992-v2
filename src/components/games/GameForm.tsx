@@ -43,6 +43,10 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
           starters: initialValues.starters ?? [],
           substitutes: initialValues.substitutes ?? [],
           participated: initialValues.participated ?? [],
+          opponentCoachId: initialValues.opponentCoachId,
+          opponentStarters: initialValues.opponentStarters ?? [],
+          opponentSubstitutes: initialValues.opponentSubstitutes ?? [],
+          opponentParticipated: initialValues.opponentParticipated ?? [],
           goals: initialValues.goals,
           referees: initialValues.referees,
           notes: initialValues.notes,
@@ -56,6 +60,9 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
           starters: [],
           substitutes: [],
           participated: [],
+          opponentStarters: [],
+          opponentSubstitutes: [],
+          opponentParticipated: [],
         },
   });
 
@@ -75,128 +82,131 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
     >
       <h3>{initialValues ? "Editar jogo" : "Novo jogo"}</h3>
 
-      <div className="grid grid-2">
-        <label>
-          Data *
-          <input type="date" {...register("date")} />
-          {errors.date && <span className="error">{errors.date.message}</span>}
-        </label>
-        <label>
-          Horário
-          <input type="time" {...register("time")} />
-        </label>
-      </div>
+      <fieldset>
+        <legend>Data e Horário</legend>
+        <div className="grid grid-2">
+          <label>
+            Data *
+            <input type="date" {...register("date")} />
+            {errors.date && <span className="error">{errors.date.message}</span>}
+          </label>
+          <label>
+            Horário
+            <input type="time" {...register("time")} />
+          </label>
+        </div>
+      </fieldset>
 
-      <div className="grid grid-2">
-        <label>
-          Competição (ID) *
-          <input {...register("competitionId")} placeholder="ID da coleção competitions" />
-          {errors.competitionId && <span className="error">{errors.competitionId.message}</span>}
-        </label>
-        <label>
-          Edição (ID) *
-          <input {...register("editionId")} placeholder="ID da coleção editions" />
-          {errors.editionId && <span className="error">{errors.editionId.message}</span>}
-        </label>
-      </div>
+      <fieldset>
+        <legend>Competição, Edição, Fase e Rodada</legend>
+        <div className="grid grid-2">
+          <label>
+            Competição (ID) *
+            <input {...register("competitionId")} placeholder="ID da coleção competitions" />
+            {errors.competitionId && <span className="error">{errors.competitionId.message}</span>}
+          </label>
+          <label>
+            Edição (ID) *
+            <input {...register("editionId")} placeholder="ID da coleção editions" />
+            {errors.editionId && <span className="error">{errors.editionId.message}</span>}
+          </label>
+        </div>
+        <div className="grid grid-2">
+          <label>
+            Fase
+            <input {...register("phase")} />
+          </label>
+          <label>
+            Rodada
+            <input {...register("round")} />
+          </label>
+        </div>
+      </fieldset>
 
-      <div className="grid grid-2">
-        <label>
-          Adversário (ID) *
-          <input {...register("opponentId")} placeholder="ID da coleção opponents" />
-          {errors.opponentId && <span className="error">{errors.opponentId.message}</span>}
-        </label>
-        <label>
-          Técnico
-          <Controller
-            control={control}
-            name="coachId"
-            render={({ field }) => (
-              <PersonPicker value={field.value} onChange={field.onChange} placeholder="Buscar treinador..." />
-            )}
-          />
-        </label>
-      </div>
-
-      <div className="grid grid-2">
-        <label>
-          Local / Venue (ID) *
-          <input {...register("venueId")} placeholder="ID da coleção venues" />
-          {errors.venueId && <span className="error">{errors.venueId.message}</span>}
-        </label>
-        <label>
-          Cidade (ID) *
-          <input {...register("cityId")} placeholder="ID da coleção cities" />
-          {errors.cityId && <span className="error">{errors.cityId.message}</span>}
-        </label>
-      </div>
-
-      <div className="grid grid-2">
+      <fieldset>
+        <legend>Cidade, Local e País</legend>
+        <div className="grid grid-2">
+          <label>
+            Local / Venue (ID) *
+            <input {...register("venueId")} placeholder="ID da coleção venues" />
+            {errors.venueId && <span className="error">{errors.venueId.message}</span>}
+          </label>
+          <label>
+            Cidade (ID) *
+            <input {...register("cityId")} placeholder="ID da coleção cities" />
+            {errors.cityId && <span className="error">{errors.cityId.message}</span>}
+          </label>
+        </div>
         <label>
           País
           <input {...register("country")} placeholder="Brasil" />
         </label>
-        <label>
-          Mandante / Visitante *
-          <select {...register("homeAway")}>
-            <option value="home">Casa (home)</option>
-            <option value="away">Fora (away)</option>
-            <option value="neutral">Neutro</option>
-          </select>
-        </label>
-      </div>
+      </fieldset>
 
-      <div className="grid grid-2">
-        <label>
-          Fase
-          <input {...register("phase")} />
-        </label>
-        <label>
-          Rodada
-          <input {...register("round")} />
-        </label>
-      </div>
+      <fieldset>
+        <legend>Adversário e Mandante/Visitante</legend>
+        <div className="grid grid-2">
+          <label>
+            Adversário (ID) *
+            <input {...register("opponentId")} placeholder="ID da coleção opponents" />
+            {errors.opponentId && <span className="error">{errors.opponentId.message}</span>}
+          </label>
+          <label>
+            Mandante / Visitante *
+            <select {...register("homeAway")}>
+              <option value="home">Casa (home)</option>
+              <option value="away">Fora (away)</option>
+              <option value="neutral">Neutro</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
 
-      <div className="grid grid-2">
-        <label>
-          Gols do Jaraguá *
-          <input type="number" min={0} {...register("jaraguaGoals", { valueAsNumber: true })} />
-          {errors.jaraguaGoals && <span className="error">{errors.jaraguaGoals.message}</span>}
-        </label>
-        <label>
-          Gols do adversário *
-          <input type="number" min={0} {...register("opponentGoals", { valueAsNumber: true })} />
-          {errors.opponentGoals && <span className="error">{errors.opponentGoals.message}</span>}
-        </label>
-      </div>
+      <fieldset>
+        <legend>Resultado</legend>
+        <div className="grid grid-2">
+          <label>
+            Gols do Jaraguá *
+            <input type="number" min={0} {...register("jaraguaGoals", { valueAsNumber: true })} />
+            {errors.jaraguaGoals && <span className="error">{errors.jaraguaGoals.message}</span>}
+          </label>
+          <label>
+            Gols do adversário *
+            <input type="number" min={0} {...register("opponentGoals", { valueAsNumber: true })} />
+            {errors.opponentGoals && <span className="error">{errors.opponentGoals.message}</span>}
+          </label>
+        </div>
+        <p>
+          <strong>Resultado calculado automaticamente:</strong> {previewResult}
+        </p>
+      </fieldset>
 
-      <p>
-        <strong>Resultado calculado automaticamente:</strong> {previewResult}
-      </p>
-
-      <div className="grid grid-2">
-        <label>
-          Público presente
-          <input
-            type="number"
-            min={0}
-            {...register("attendance", {
-              setValueAs: (v) => (v === "" || v === null ? undefined : Number(v)),
-            })}
-          />
-        </label>
-        <label>
-          Renda (R$)
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            {...register("revenue", {
-              setValueAs: (v) => (v === "" || v === null ? undefined : Number(v)),
-            })}
-          />
-        </label>
-      </div>
+      <fieldset>
+        <legend>Público e Renda</legend>
+        <div className="grid grid-2">
+          <label>
+            Público presente
+            <input
+              type="number"
+              min={0}
+              {...register("attendance", {
+                setValueAs: (v) => (v === "" || v === null ? undefined : Number(v)),
+              })}
+            />
+          </label>
+          <label>
+            Renda (R$)
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              {...register("revenue", {
+                setValueAs: (v) => (v === "" || v === null ? undefined : Number(v)),
+              })}
+            />
+          </label>
+        </div>
+      </fieldset>
 
       <fieldset>
         <legend>Titulares</legend>
@@ -227,6 +237,67 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
           name="participated"
           render={({ field }) => (
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar pessoa..." addLabel="+ Adicionar participante" />
+          )}
+        />
+      </fieldset>
+
+      <fieldset>
+        <legend>Técnicos</legend>
+        <div className="grid grid-2">
+          <label>
+            Técnico do Jaraguá
+            <Controller
+              control={control}
+              name="coachId"
+              render={({ field }) => (
+                <PersonPicker value={field.value} onChange={field.onChange} placeholder="Buscar treinador do Jaraguá..." />
+              )}
+            />
+          </label>
+          <label>
+            Técnico adversário
+            <Controller
+              control={control}
+              name="opponentCoachId"
+              render={({ field }) => (
+                <PersonPicker value={field.value} onChange={field.onChange} placeholder="Buscar treinador adversário..." />
+              )}
+            />
+          </label>
+        </div>
+        <p className="hint">
+          Extensão além do schema oficial (Volume I 5.16 / Volume II 5.19 só previam o vínculo;
+          aqui reaproveitamos a mesma coleção people para registrá-lo).
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Escalação do Adversário (extensão)</legend>
+        <p className="hint">
+          Não consta nos volumes oficiais — adicionado a pedido, reaproveitando a coleção people.
+        </p>
+        <label>Iniciaram (adversário)</label>
+        <Controller
+          control={control}
+          name="opponentStarters"
+          render={({ field }) => (
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta adversário titular..." addLabel="+ Adicionar titular adversário" />
+          )}
+        />
+        <label>Entraram (adversário)</label>
+        <Controller
+          control={control}
+          name="opponentSubstitutes"
+          render={({ field }) => (
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta adversário reserva..." addLabel="+ Adicionar reserva adversário" />
+          )}
+        />
+        <label>Jogaram (adversário)</label>
+        <Controller
+          control={control}
+          name="opponentParticipated"
+          render={({ field }) => (
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar pessoa adversária..." addLabel="+ Adicionar participante adversário" />
           )}
         />
       </fieldset>
@@ -281,10 +352,10 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
         </button>
       </fieldset>
 
-      <label>
-        Observações
+      <fieldset>
+        <legend>Observações</legend>
         <textarea {...register("notes")} rows={3} />
-      </label>
+      </fieldset>
 
       <div className="actions">
         <button className="btn" type="submit" disabled={isSubmitting}>
