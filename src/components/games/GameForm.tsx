@@ -265,17 +265,10 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             />
           </label>
         </div>
-        <p className="hint">
-          Extensão além do schema oficial (Volume I 5.16 / Volume II 5.19 só previam o vínculo;
-          aqui reaproveitamos a mesma coleção people para registrá-lo).
-        </p>
       </fieldset>
 
       <fieldset>
-        <legend>Escalação do Adversário (extensão)</legend>
-        <p className="hint">
-          Não consta nos volumes oficiais — adicionado a pedido, reaproveitando a coleção people.
-        </p>
+        <legend>Escalação do Adversário</legend>
         <label>Iniciaram (adversário)</label>
         <Controller
           control={control}
