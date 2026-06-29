@@ -6,6 +6,11 @@ import { opponentSchema, type OpponentInput } from "@/lib/schemas/opponents";
 import type { Opponent } from "@/types/opponents";
 
 const IDENTIFICATION_OPTIONS = ["identified", "partial", "unknown"] as const;
+const IDENTIFICATION_LABELS: Record<string, string> = {
+  identified: "Identificado",
+  partial: "Parcial",
+  unknown: "Desconhecido",
+};
 
 type OpponentFormProps = {
   initialValues?: Opponent;
@@ -151,7 +156,7 @@ export function OpponentForm({ initialValues, onSubmit, onCancel }: OpponentForm
         <select {...register("identificationStatus")}>
           <option value="">—</option>
           {IDENTIFICATION_OPTIONS.map((o) => (
-            <option key={o} value={o}>{o}</option>
+            <option key={o} value={o}>{IDENTIFICATION_LABELS[o]}</option>
           ))}
         </select>
       </label>

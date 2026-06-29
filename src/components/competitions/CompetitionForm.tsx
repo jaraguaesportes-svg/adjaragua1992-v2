@@ -9,6 +9,26 @@ const TYPE_OPTIONS = ["league", "cup", "supercup", "friendly", "selection"] as c
 const LEVEL_OPTIONS = ["international", "national", "state", "regional", "municipal"] as const;
 const CLASSIFICATION_OPTIONS = ["principal", "secondary", "friendly"] as const;
 
+const TYPE_LABELS: Record<string, string> = {
+  league: "Liga",
+  cup: "Copa",
+  supercup: "Supercopa",
+  friendly: "Amistoso",
+  selection: "Seleção",
+};
+const LEVEL_LABELS: Record<string, string> = {
+  international: "Internacional",
+  national: "Nacional",
+  state: "Estadual",
+  regional: "Regional",
+  municipal: "Municipal",
+};
+const CLASSIFICATION_LABELS: Record<string, string> = {
+  principal: "Principal",
+  secondary: "Secundária",
+  friendly: "Amistosa",
+};
+
 type CompetitionFormProps = {
   initialValues?: Competition;
   onSubmit: (data: CompetitionInput) => Promise<void>;
@@ -69,7 +89,7 @@ export function CompetitionForm({ initialValues, onSubmit, onCancel }: Competiti
           Tipo *
           <select {...register("competitionType")}>
             {TYPE_OPTIONS.map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>{TYPE_LABELS[t]}</option>
             ))}
           </select>
         </label>
@@ -77,7 +97,7 @@ export function CompetitionForm({ initialValues, onSubmit, onCancel }: Competiti
           Nível *
           <select {...register("level")}>
             {LEVEL_OPTIONS.map((l) => (
-              <option key={l} value={l}>{l}</option>
+              <option key={l} value={l}>{LEVEL_LABELS[l]}</option>
             ))}
           </select>
         </label>
@@ -125,7 +145,7 @@ export function CompetitionForm({ initialValues, onSubmit, onCancel }: Competiti
           <select {...register("classification")}>
             <option value="">—</option>
             {CLASSIFICATION_OPTIONS.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>{CLASSIFICATION_LABELS[c]}</option>
             ))}
           </select>
         </label>

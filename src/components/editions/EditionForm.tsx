@@ -8,6 +8,18 @@ import type { Edition } from "@/types/editions";
 const CATEGORY_OPTIONS = ["adult-male", "adult-female", "youth", "selection"] as const;
 const PARTICIPATION_OPTIONS = ["official", "friendly", "guest"] as const;
 
+const CATEGORY_LABELS: Record<string, string> = {
+  "adult-male": "Adulto Masculino",
+  "adult-female": "Adulto Feminino",
+  youth: "Categoria de Base",
+  selection: "Seleção",
+};
+const PARTICIPATION_LABELS: Record<string, string> = {
+  official: "Oficial",
+  friendly: "Amistoso",
+  guest: "Convidado",
+};
+
 function asNum(v: unknown) {
   return v === "" || v === null ? undefined : Number(v);
 }
@@ -97,7 +109,7 @@ export function EditionForm({ initialValues, onSubmit, onCancel }: EditionFormPr
           Categoria *
           <select {...register("category")}>
             {CATEGORY_OPTIONS.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
             ))}
           </select>
         </label>
@@ -105,7 +117,7 @@ export function EditionForm({ initialValues, onSubmit, onCancel }: EditionFormPr
           Tipo de participação *
           <select {...register("participationType")}>
             {PARTICIPATION_OPTIONS.map((p) => (
-              <option key={p} value={p}>{p}</option>
+              <option key={p} value={p}>{PARTICIPATION_LABELS[p]}</option>
             ))}
           </select>
         </label>
