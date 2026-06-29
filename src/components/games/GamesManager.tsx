@@ -11,6 +11,9 @@ import { GameForm } from "./GameForm";
 function buildGamePayload(data: GameInput) {
   return {
     ...data,
+    starters: (data.starters ?? []).filter(Boolean),
+    substitutes: (data.substitutes ?? []).filter(Boolean),
+    participated: (data.participated ?? []).filter(Boolean),
     slug: deriveGameSlug({
       date: data.date,
       homeAway: data.homeAway,

@@ -1,51 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { PersonPicker } from "./PersonPicker";
-import { listCollection } from "@/lib/services/firestore";
-import type { Person } from "@/types/people";
 
 type PersonMultiPickerProps = {
   value: string[];
   onChange: (ids: string[]) => void;
   placeholder?: string;
+  addLabel?: string;
 };
 
-export function PersonMultiPicker({ value, onChange, placeholder }: PersonMultiPickerProps) {
-  const [people, setPeople] = useState<Person[]>([]);
-
-  useEffect(() => {
-    listCollection<Person>("people").then(setPeople);
-  }, [value.length]);
-
-  function add(id: string | undefined) {
-    if (!id || value.includes(id)) return;
-    onChange([...value, id]);
+/**
+ * Lista de pessoas no mesmo padrão visual de "Gols" e "Árbitros": um botão
+ * "+ Adicionar" cria uma linha nova; cada linha é um item separado do array
+ * (nunca texto unido por vírgula ou ponto e vírgula).
+ */
+export function PersonMultiPicker({ value, onChange, placeholder, addLabel = "+ Adicionar" }: PersonMultiPickerProps) {
+  function updateAt(index: number, id: string | undefined) {
+    const next = [...value];
+    next[index] = id ?? "";
+    onChange(next);
   }
 
-  function remove(id: string) {
-    onChange(value.filter((v) => v !== id));
+  function removeAt(index: number) {
+    onChange(value.filter((_, i) => i !== index));
   }
 
   return (
     <div>
-      {value.length > 0 && (
-        <ol className="person-line-list">
-          {value.map((id) => {
-            const person = people.find((p) => p.id === id);
-            return (
-              <li key={id} className="person-line-item">
-                <span>{person?.nickname ?? `(carregando: ${id})`}</span>
-                {person?.fullName && <span className="person-line-fullname">{person.fullName}</span>}
-                <button type="button" className="btn-link" onClick={() => remove(id)}>
-                  Remover
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      )}
-      <PersonPicker value={undefined} onChange={add} placeholder={placeholder} />
+      {value.map((id, index) => (
+        <div key={index} className="grid grid-2" style={{ marginBottom: 8 }}>
+          <PersonPicker value={id || undefined} onChange={(v) => updateAt(index, v)} placeholder={placeholder} />
+          <button type="button" className="btn-link" onClick={() => removeAt(index)}>
+            Remover
+          </button>
+        </div>
+      ))}
+      <button type="button" className="btn-secondary" onClick={() => onChange([...value, ""])}>
+        {addLabel}
+      </button>
     </div>
   );
 }

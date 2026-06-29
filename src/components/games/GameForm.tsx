@@ -204,7 +204,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
           control={control}
           name="starters"
           render={({ field }) => (
-            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta titular..." />
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta titular..." addLabel="+ Adicionar titular" />
           )}
         />
       </label>
@@ -215,7 +215,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
           control={control}
           name="substitutes"
           render={({ field }) => (
-            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta reserva..." />
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta reserva..." addLabel="+ Adicionar reserva" />
           )}
         />
       </label>
@@ -226,7 +226,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
           control={control}
           name="participated"
           render={({ field }) => (
-            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar pessoa..." />
+            <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar pessoa..." addLabel="+ Adicionar participante" />
           )}
         />
       </label>
