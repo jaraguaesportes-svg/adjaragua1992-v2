@@ -1,12 +1,5 @@
-import { EntityList } from "@/components/ui/EntityList";
+import { SourcesManager } from "@/components/sources/SourcesManager";
 
 export default function Page() {
-  return (
-    <EntityList
-      title="Sources"
-      description="Tela inicial de administração da coleção sources."
-      collection="sources"
-      fields={["id", "slug", "status", "sourceIds", "createdAt", "updatedAt"]}
-    />
-  );
+  return <SourcesManager />;
 }
