@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { archiveDocument, createDocument, getDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
 import { recalculateStatisticsForGameParticipants } from "@/lib/services/statistics";
-import { migrateLegacyPeopleReferencesInGames } from "@/lib/services/migratePeople";
+import { migrateLegacyPeopleReferencesInGames, migrateLegacyOpponentReferencesInGames } from "@/lib/services/migratePeople";
 import type { Game } from "@/types/games";
 import type { Opponent } from "@/types/opponents";
 import { deriveResult, deriveGameSlug, type GameInput } from "@/lib/schemas/games";
@@ -104,13 +104,15 @@ export function GamesManager() {
   }
 
   async function handleMigrate() {
-    if (!confirm("Corrigir pessoas de jogos antigos (criar/vincular pessoas reais a partir dos nomes digitados)?")) return;
+    if (!confirm("Corrigir pessoas e adversários de jogos antigos (criar/vincular registros reais a partir dos nomes digitados)?")) return;
     setMigrating(true);
     setMigrationResult(null);
     try {
-      const result = await migrateLegacyPeopleReferencesInGames();
+      const peopleResult = await migrateLegacyPeopleReferencesInGames();
+      const opponentResult = await migrateLegacyOpponentReferencesInGames();
       setMigrationResult(
-        `Pronto: ${result.createdCount} pessoa(s) criada(s), ${result.updatedGamesCount} jogo(s) corrigido(s), ${result.affectedPeople} pessoa(s) com estatísticas recalculadas.`
+        `Pessoas: ${peopleResult.createdCount} criada(s), ${peopleResult.updatedGamesCount} jogo(s) corrigido(s). ` +
+        `Adversários: ${opponentResult.createdCount} criado(s), ${opponentResult.updatedGamesCount} jogo(s) corrigido(s).`
       );
       await refresh();
     } catch (err) {
@@ -131,7 +133,7 @@ export function GamesManager() {
 
       <div className="actions">
         <button className="btn-secondary" onClick={handleMigrate} disabled={migrating}>
-          {migrating ? "Corrigindo..." : "Corrigir pessoas de jogos antigos"}
+          {migrating ? "Corrigindo..." : "Corrigir pessoas e adversários de jogos antigos"}
         </button>
       </div>
       {migrationResult && <p>{migrationResult}</p>}

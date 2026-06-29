@@ -1,8 +1,10 @@
 import { createDocument, listCollection, upsertDocument } from "@/lib/services/firestore";
 import { derivePersonSlug } from "@/lib/schemas/people";
+import { deriveOpponentSlug } from "@/lib/schemas/opponents";
 import type { Game } from "@/types/games";
 import type { Person } from "@/types/people";
-import { recalculatePersonStatistics } from "@/lib/services/statistics";
+import type { Opponent } from "@/types/opponents";
+import { recalculatePersonStatistics, recalculateOpponentStatistics } from "@/lib/services/statistics";
 
 /**
  * Corrige jogos cadastrados antes de existir o seletor de pessoas: campos como
@@ -128,4 +130,71 @@ export async function migrateLegacyPeopleReferencesInGames() {
   }
 
   return { createdCount, updatedGamesCount, affectedPeople: touchedPersonIds.size };
+}
+
+/**
+ * Corrige jogos cuja referência de adversário (opponentId) ainda é o nome
+ * digitado livremente, criados antes de existir o seletor de adversários.
+ * Mesmo princípio da migração de pessoas: reaproveita se já existir um
+ * adversário com nome igual, senão cria cadastro provisório.
+ */
+export async function migrateLegacyOpponentReferencesInGames() {
+  const [games, opponents] = await Promise.all([
+    listCollection<Game>("games"),
+    listCollection<Opponent>("opponents"),
+  ]);
+
+  const idSet = new Set(opponents.map((o) => o.id));
+  const byExactName = new Map<string, string>();
+  for (const o of opponents) {
+    byExactName.set(o.name.trim().toLowerCase(), o.id);
+  }
+
+  let createdCount = 0;
+  let updatedGamesCount = 0;
+  const touchedOpponentIds = new Set<string>();
+
+  for (const game of games) {
+    const raw = game.opponentId;
+    if (!raw || idSet.has(raw)) continue;
+
+    const key = raw.trim().toLowerCase();
+    let resolved = byExactName.get(key);
+
+    if (!resolved) {
+      const ref = await createDocument(
+        "opponents",
+        {
+          name: raw.trim(),
+          shortName: raw.trim(),
+          sport: "futsal",
+          country: "Brasil",
+          active: true,
+          identificationStatus: "unknown",
+          slug: deriveOpponentSlug(raw.trim()),
+        },
+        raw.trim()
+      );
+      idSet.add(ref.id);
+      byExactName.set(key, ref.id);
+      resolved = ref.id;
+      createdCount += 1;
+    }
+
+    await upsertDocument(
+      "games",
+      game.id,
+      { opponentId: resolved },
+      { entityName: `${game.date} x ${raw}`, before: game }
+    );
+    updatedGamesCount += 1;
+    touchedOpponentIds.add(resolved);
+  }
+
+  const freshGames = await listCollection<Game>("games");
+  for (const opponentId of touchedOpponentIds) {
+    await recalculateOpponentStatistics(opponentId, freshGames);
+  }
+
+  return { createdCount, updatedGamesCount, affectedOpponents: touchedOpponentIds.size };
 }
