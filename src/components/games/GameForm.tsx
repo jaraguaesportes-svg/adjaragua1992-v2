@@ -6,6 +6,7 @@ import { gameSchema, type GameInput } from "@/lib/schemas/games";
 import type { Game } from "@/types/games";
 import { PersonPicker } from "@/components/people/PersonPicker";
 import { PersonMultiPicker } from "@/components/people/PersonMultiPicker";
+import { OpponentPicker } from "@/components/opponents/OpponentPicker";
 
 type GameFormProps = {
   initialValues?: Game;
@@ -147,8 +148,14 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
         <legend>Adversário</legend>
         <div className="grid grid-2">
           <label>
-            Adversário (ID) *
-            <input {...register("opponentId")} placeholder="ID da coleção opponents" />
+            Adversário *
+            <Controller
+              control={control}
+              name="opponentId"
+              render={({ field }) => (
+                <OpponentPicker value={field.value} onChange={(v) => field.onChange(v ?? "")} />
+              )}
+            />
             {errors.opponentId && <span className="error">{errors.opponentId.message}</span>}
           </label>
           <label>

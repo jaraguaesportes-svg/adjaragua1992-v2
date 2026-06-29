@@ -7,6 +7,7 @@ export type Game = BaseDocument & {
   competitionId: string;
   editionId: string;
   opponentId: string;
+  opponentName?: string;
   venueId: string;
   cityId: string;
   country?: string;

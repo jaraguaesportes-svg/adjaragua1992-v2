@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { archiveDocument, createDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
+import { archiveDocument, createDocument, getDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
 import { recalculateStatisticsForGameParticipants } from "@/lib/services/statistics";
 import { migrateLegacyPeopleReferencesInGames } from "@/lib/services/migratePeople";
 import type { Game } from "@/types/games";
+import type { Opponent } from "@/types/opponents";
 import { deriveResult, deriveGameSlug, type GameInput } from "@/lib/schemas/games";
 import { GameForm } from "./GameForm";
 
-function buildGamePayload(data: GameInput) {
+async function buildGamePayload(data: GameInput) {
+  const opponent = await getDocument<Opponent>("opponents", data.opponentId);
+  const opponentLabel = opponent?.slug ?? opponent?.name ?? data.opponentId;
   return {
     ...data,
     starters: (data.starters ?? []).filter(Boolean),
@@ -20,20 +23,18 @@ function buildGamePayload(data: GameInput) {
     slug: deriveGameSlug({
       date: data.date,
       homeAway: data.homeAway,
-      opponentId: data.opponentId,
+      opponentId: opponentLabel,
       jaraguaGoals: Number(data.jaraguaGoals),
       opponentGoals: Number(data.opponentGoals),
     }),
     result: deriveResult(Number(data.jaraguaGoals), Number(data.opponentGoals)),
+    opponentName: opponent?.name,
   };
-}
-
-function gameLabel(data: { date: string; opponentId: string }) {
-  return `${data.date} x ${data.opponentId}`;
 }
 
 export function GamesManager() {
   const [games, setGames] = useState<Game[]>([]);
+  const [opponentNames, setOpponentNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Game | null>(null);
@@ -45,8 +46,12 @@ export function GamesManager() {
     setLoading(true);
     setError(null);
     try {
-      const data = await listCollection<Game>("games");
+      const [data, opponents] = await Promise.all([
+        listCollection<Game>("games"),
+        listCollection<Opponent>("opponents"),
+      ]);
       setGames(data);
+      setOpponentNames(Object.fromEntries(opponents.map((o) => [o.id, o.name])));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao carregar jogos");
     } finally {
@@ -58,8 +63,12 @@ export function GamesManager() {
     refresh();
   }, []);
 
+  function gameLabel(data: { date: string; opponentId: string }) {
+    return `${data.date} x ${opponentNames[data.opponentId] ?? data.opponentId}`;
+  }
+
   async function handleCreate(data: GameInput) {
-    const payload = buildGamePayload(data);
+    const payload = await buildGamePayload(data);
     await createDocument("games", payload, gameLabel(data));
     await recalculateStatisticsForGameParticipants(payload);
     setShowForm(false);
@@ -68,7 +77,7 @@ export function GamesManager() {
 
   async function handleUpdate(data: GameInput) {
     if (!editing) return;
-    const payload = buildGamePayload(data);
+    const payload = await buildGamePayload(data);
     await upsertDocument("games", editing.id, payload, {
       entityName: gameLabel(data),
       before: editing,
@@ -158,7 +167,7 @@ export function GamesManager() {
             {games.map((game) => (
               <tr key={game.id}>
                 <td>{game.date}</td>
-                <td>{game.opponentId}</td>
+                <td>{opponentNames[game.opponentId] ?? game.opponentId}</td>
                 <td>{game.jaraguaGoals} x {game.opponentGoals}</td>
                 <td>{game.result}</td>
                 <td>{game.status}</td>
