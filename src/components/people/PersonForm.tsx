@@ -1,9 +1,10 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { personSchema, type PersonInput } from "@/lib/schemas/people";
 import type { Person } from "@/types/people";
+import { CityPicker } from "@/components/cities/CityPicker";
 
 const ROLE_OPTIONS = ["player", "coach", "referee", "director", "official"] as const;
 const POSITION_OPTIONS = ["goalkeeper", "fixo", "ala", "pivot"] as const;
@@ -17,6 +18,7 @@ type PersonFormProps = {
 export function PersonForm({ initialValues, onSubmit, onCancel }: PersonFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<PersonInput>({
@@ -75,8 +77,14 @@ export function PersonForm({ initialValues, onSubmit, onCancel }: PersonFormProp
       </div>
 
       <label>
-        Cidade de nascimento (ID)
-        <input {...register("birthCityId")} placeholder="ID da coleção cities" />
+        Cidade de nascimento
+        <Controller
+          control={control}
+          name="birthCityId"
+          render={({ field }) => (
+            <CityPicker value={field.value} onChange={field.onChange} />
+          )}
+        />
       </label>
 
       <div className="grid grid-2">

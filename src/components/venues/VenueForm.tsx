@@ -1,9 +1,10 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { venueSchema, type VenueInput } from "@/lib/schemas/venues";
 import type { Venue } from "@/types/venues";
+import { CityPicker } from "@/components/cities/CityPicker";
 
 const TYPE_OPTIONS = ["arena", "gymnasium", "stadium", "sports_center", "court"] as const;
 const SURFACE_OPTIONS = ["madeira", "sintetico", "cimento", "grama"] as const;
@@ -35,6 +36,7 @@ type VenueFormProps = {
 export function VenueForm({ initialValues, onSubmit, onCancel }: VenueFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<VenueInput>({
@@ -82,8 +84,14 @@ export function VenueForm({ initialValues, onSubmit, onCancel }: VenueFormProps)
       </div>
 
       <label>
-        Cidade (ID) *
-        <input {...register("cityId")} placeholder="ID da coleção cities" />
+        Cidade *
+        <Controller
+          control={control}
+          name="cityId"
+          render={({ field }) => (
+            <CityPicker value={field.value} onChange={(v) => field.onChange(v ?? "")} />
+          )}
+        />
         {errors.cityId && <span className="error">{errors.cityId.message}</span>}
       </label>
 

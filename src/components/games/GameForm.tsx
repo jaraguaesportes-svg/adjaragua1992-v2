@@ -8,6 +8,7 @@ import { PersonPicker } from "@/components/people/PersonPicker";
 import { PersonMultiPicker } from "@/components/people/PersonMultiPicker";
 import { OpponentPicker } from "@/components/opponents/OpponentPicker";
 import { VenuePicker } from "@/components/venues/VenuePicker";
+import { CityPicker } from "@/components/cities/CityPicker";
 
 type GameFormProps = {
   initialValues?: Game;
@@ -140,8 +141,14 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             {errors.venueId && <span className="error">{errors.venueId.message}</span>}
           </label>
           <label>
-            Cidade (ID) *
-            <input {...register("cityId")} placeholder="ID da coleção cities" />
+            Cidade *
+            <Controller
+              control={control}
+              name="cityId"
+              render={({ field }) => (
+                <CityPicker value={field.value} onChange={(v) => field.onChange(v ?? "")} />
+              )}
+            />
             {errors.cityId && <span className="error">{errors.cityId.message}</span>}
           </label>
         </div>

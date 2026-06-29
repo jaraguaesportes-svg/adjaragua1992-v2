@@ -2,11 +2,13 @@ import { createDocument, listCollection, upsertDocument } from "@/lib/services/f
 import { derivePersonSlug } from "@/lib/schemas/people";
 import { deriveOpponentSlug } from "@/lib/schemas/opponents";
 import { deriveVenueSlug } from "@/lib/schemas/venues";
+import { deriveCitySlug } from "@/lib/schemas/cities";
 import type { Game } from "@/types/games";
 import type { Person } from "@/types/people";
 import type { Opponent } from "@/types/opponents";
 import type { Venue } from "@/types/venues";
-import { recalculatePersonStatistics, recalculateOpponentStatistics, recalculateVenueStatistics } from "@/lib/services/statistics";
+import type { City } from "@/types/cities";
+import { recalculatePersonStatistics, recalculateOpponentStatistics, recalculateVenueStatistics, recalculateCityStatistics } from "@/lib/services/statistics";
 
 /**
  * Corrige jogos cadastrados antes de existir o seletor de pessoas: campos como
@@ -265,4 +267,67 @@ export async function migrateLegacyVenueReferencesInGames() {
   }
 
   return { createdCount, updatedGamesCount, affectedVenues: touchedVenueIds.size };
+}
+
+/**
+ * Corrige jogos cuja referência de cidade (cityId) ainda é o nome digitado
+ * livremente, criados antes de existir o seletor de cidades.
+ */
+export async function migrateLegacyCityReferencesInGames() {
+  const [games, cities] = await Promise.all([
+    listCollection<Game>("games"),
+    listCollection<City>("cities"),
+  ]);
+
+  const idSet = new Set(cities.map((c) => c.id));
+  const byExactName = new Map<string, string>();
+  for (const c of cities) {
+    byExactName.set(c.name.trim().toLowerCase(), c.id);
+  }
+
+  let createdCount = 0;
+  let updatedGamesCount = 0;
+  const touchedCityIds = new Set<string>();
+
+  for (const game of games) {
+    const raw = game.cityId;
+    if (!raw || idSet.has(raw)) continue;
+
+    const key = raw.trim().toLowerCase();
+    let resolved = byExactName.get(key);
+
+    if (!resolved) {
+      const ref = await createDocument(
+        "cities",
+        {
+          name: raw.trim(),
+          state: "",
+          country: "Brasil",
+          countryCode: "BR",
+          slug: deriveCitySlug(raw.trim()),
+        },
+        raw.trim()
+      );
+      idSet.add(ref.id);
+      byExactName.set(key, ref.id);
+      resolved = ref.id;
+      createdCount += 1;
+    }
+
+    await upsertDocument(
+      "games",
+      game.id,
+      { cityId: resolved },
+      { entityName: `${game.date} - ${raw}`, before: game }
+    );
+    updatedGamesCount += 1;
+    touchedCityIds.add(resolved);
+  }
+
+  const freshGames = await listCollection<Game>("games");
+  for (const cityId of touchedCityIds) {
+    await recalculateCityStatistics(cityId, freshGames);
+  }
+
+  return { createdCount, updatedGamesCount, affectedCities: touchedCityIds.size };
 }

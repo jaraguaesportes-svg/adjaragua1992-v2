@@ -76,6 +76,9 @@ export async function recalculateStatisticsForGameParticipants(game: Partial<Gam
   if (game.venueId) {
     await recalculateVenueStatistics(game.venueId, allGames);
   }
+  if (game.cityId) {
+    await recalculateCityStatistics(game.cityId, allGames);
+  }
 }
 
 /** Recalcula statistics e confrontationStatistics do adversário, conforme Volume V 6.12/6.13. */
@@ -116,6 +119,43 @@ export async function recalculateOpponentStatistics(opponentId: string, allGames
 
   await upsertDocument("opponents", opponentId, { statistics, confrontationStatistics });
   return { statistics, confrontationStatistics };
+}
+
+/** Recalcula statistics, venueStatistics, peopleStatistics e gameStatistics da cidade, conforme Volume V 8.21-8.23. */
+export async function recalculateCityStatistics(cityId: string, allGames?: Game[]) {
+  const games = allGames ?? (await listCollection<Game>("games"));
+  const activeGames = games.filter((g) => g.status === "active" && g.cityId === cityId);
+
+  const statistics = { games: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 };
+  const gameStatistics = { homeGames: 0, awayGames: 0, neutralGames: 0 };
+  const venueIds = new Set<string>();
+  const playerIds = new Set<string>();
+  const coachIds = new Set<string>();
+
+  for (const g of activeGames) {
+    statistics.games += 1;
+    if (g.result === "win") statistics.wins += 1;
+    else if (g.result === "draw") statistics.draws += 1;
+    else if (g.result === "loss") statistics.losses += 1;
+    statistics.goalsFor += g.jaraguaGoals;
+    statistics.goalsAgainst += g.opponentGoals;
+
+    if (g.homeAway === "home") gameStatistics.homeGames += 1;
+    else if (g.homeAway === "away") gameStatistics.awayGames += 1;
+    else gameStatistics.neutralGames += 1;
+
+    if (g.venueId) venueIds.add(g.venueId);
+    g.starters?.forEach((id) => playerIds.add(id));
+    g.substitutes?.forEach((id) => playerIds.add(id));
+    g.participated?.forEach((id) => playerIds.add(id));
+    if (g.coachId) coachIds.add(g.coachId);
+  }
+
+  const venueStatistics = { venues: venueIds.size };
+  const peopleStatistics = { players: playerIds.size, coaches: coachIds.size, referees: 0 };
+
+  await upsertDocument("cities", cityId, { statistics, venueStatistics, peopleStatistics, gameStatistics });
+  return { statistics, venueStatistics, peopleStatistics, gameStatistics };
 }
 
 /** Recalcula statistics, attendanceStatistics e datas extremas do local, conforme Volume V 7.19-7.21. */

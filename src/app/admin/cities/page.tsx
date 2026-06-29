@@ -1,12 +1,5 @@
-import { EntityList } from "@/components/ui/EntityList";
+import { CitiesManager } from "@/components/cities/CitiesManager";
 
 export default function Page() {
-  return (
-    <EntityList
-      title="Cities"
-      description="Tela inicial de administração da coleção cities."
-      collection="cities"
-      fields={["id", "slug", "status", "sourceIds", "createdAt", "updatedAt"]}
-    />
-  );
+  return <CitiesManager />;
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { opponentSchema, type OpponentInput } from "@/lib/schemas/opponents";
 import type { Opponent } from "@/types/opponents";
+import { CityPicker } from "@/components/cities/CityPicker";
 
 const IDENTIFICATION_OPTIONS = ["identified", "partial", "unknown"] as const;
 const IDENTIFICATION_LABELS: Record<string, string> = {
@@ -21,6 +22,7 @@ type OpponentFormProps = {
 export function OpponentForm({ initialValues, onSubmit, onCancel }: OpponentFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<OpponentInput>({
@@ -105,8 +107,14 @@ export function OpponentForm({ initialValues, onSubmit, onCancel }: OpponentForm
       </div>
 
       <label>
-        Cidade sede (ID)
-        <input {...register("cityId")} placeholder="ID da coleção cities" />
+        Cidade sede
+        <Controller
+          control={control}
+          name="cityId"
+          render={({ field }) => (
+            <CityPicker value={field.value} onChange={field.onChange} />
+          )}
+        />
       </label>
 
       <div className="grid grid-2">

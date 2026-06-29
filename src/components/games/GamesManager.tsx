@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { archiveDocument, createDocument, getDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
 import { recalculateStatisticsForGameParticipants } from "@/lib/services/statistics";
-import { migrateLegacyPeopleReferencesInGames, migrateLegacyOpponentReferencesInGames, migrateLegacyVenueReferencesInGames } from "@/lib/services/migratePeople";
+import { migrateLegacyPeopleReferencesInGames, migrateLegacyOpponentReferencesInGames, migrateLegacyVenueReferencesInGames, migrateLegacyCityReferencesInGames } from "@/lib/services/migratePeople";
 import type { Game } from "@/types/games";
 import type { Opponent } from "@/types/opponents";
 import type { Venue } from "@/types/venues";
@@ -108,17 +108,19 @@ export function GamesManager() {
   }
 
   async function handleMigrate() {
-    if (!confirm("Corrigir pessoas, adversários e locais de jogos antigos (criar/vincular registros reais a partir dos nomes digitados)?")) return;
+    if (!confirm("Corrigir pessoas, adversários, locais e cidades de jogos antigos (criar/vincular registros reais a partir dos nomes digitados)?")) return;
     setMigrating(true);
     setMigrationResult(null);
     try {
       const peopleResult = await migrateLegacyPeopleReferencesInGames();
       const opponentResult = await migrateLegacyOpponentReferencesInGames();
       const venueResult = await migrateLegacyVenueReferencesInGames();
+      const cityResult = await migrateLegacyCityReferencesInGames();
       setMigrationResult(
         `Pessoas: ${peopleResult.createdCount} criada(s), ${peopleResult.updatedGamesCount} jogo(s) corrigido(s). ` +
         `Adversários: ${opponentResult.createdCount} criado(s), ${opponentResult.updatedGamesCount} jogo(s) corrigido(s). ` +
-        `Locais: ${venueResult.createdCount} criado(s), ${venueResult.updatedGamesCount} jogo(s) corrigido(s).`
+        `Locais: ${venueResult.createdCount} criado(s), ${venueResult.updatedGamesCount} jogo(s) corrigido(s). ` +
+        `Cidades: ${cityResult.createdCount} criada(s), ${cityResult.updatedGamesCount} jogo(s) corrigido(s).`
       );
       await refresh();
     } catch (err) {
@@ -139,7 +141,7 @@ export function GamesManager() {
 
       <div className="actions">
         <button className="btn-secondary" onClick={handleMigrate} disabled={migrating}>
-          {migrating ? "Corrigindo..." : "Corrigir pessoas, adversários e locais de jogos antigos"}
+          {migrating ? "Corrigindo..." : "Corrigir pessoas, adversários, locais e cidades de jogos antigos"}
         </button>
       </div>
       {migrationResult && <p>{migrationResult}</p>}
