@@ -83,7 +83,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
       <h3>{initialValues ? "Editar jogo" : "Novo jogo"}</h3>
 
       <fieldset>
-        <legend>Data e Horário</legend>
+        <legend>Agenda</legend>
         <div className="grid grid-2">
           <label>
             Data *
@@ -98,7 +98,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend>Competição, Edição, Fase e Rodada</legend>
+        <legend>Evento</legend>
         <div className="grid grid-2">
           <label>
             Competição (ID) *
@@ -124,7 +124,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend>Cidade, Local e País</legend>
+        <legend>Local</legend>
         <div className="grid grid-2">
           <label>
             Local / Venue (ID) *
@@ -144,7 +144,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend>Adversário e Mandante/Visitante</legend>
+        <legend>Adversário</legend>
         <div className="grid grid-2">
           <label>
             Adversário (ID) *
