@@ -3,63 +3,81 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { useAuth } from "@/lib/firebase/useAuth";
 
-const links = [
-  ["/admin", "Painel"],
-  ["/admin/people", "Pessoas"],
-  ["/admin/games", "Jogos"],
-  ["/admin/competitions", "Competições"],
-  ["/admin/editions", "Edições"],
-  ["/admin/opponents", "Adversários"],
-  ["/admin/venues", "Locais"],
-  ["/admin/cities", "Cidades"],
-  ["/admin/sources", "Fontes"],
+const NAV_LINKS = [
+  { href: "/admin", label: "Painel", icon: "ti-layout-dashboard" },
+  { href: "/admin/games", label: "Jogos", icon: "ti-ball-football" },
+  { href: "/admin/people", label: "Pessoas", icon: "ti-users" },
+  { href: "/admin/competitions", label: "Competições", icon: "ti-trophy" },
+  { href: "/admin/editions", label: "Edições", icon: "ti-calendar-event" },
+  { href: "/admin/opponents", label: "Adversários", icon: "ti-shield" },
+  { href: "/admin/venues", label: "Locais", icon: "ti-building-stadium" },
+  { href: "/admin/cities", label: "Cidades", icon: "ti-map-pin" },
+  { href: "/admin/sources", label: "Fontes", icon: "ti-file-description" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-    }
+    if (!loading && !user) router.push("/login");
   }, [loading, user, router]);
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <main className="container">
-        <p>Verificando autenticação...</p>
-      </main>
-    );
-  }
-
-  if (!user) {
-    return (
-      <main className="container">
-        <p>Redirecionando para login...</p>
-      </main>
+      <div className="app">
+        <div className="main" style={{ justifyContent: "center", alignItems: "center" }}>
+          <p style={{ color: "var(--tx3)" }}>Verificando autenticação...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <main className="container">
-      <div className="actions">
-        <h1>Administração</h1>
+    <div className="app">
+      <header className="hdr">
+        <img
+          className="hdr-logo"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23F5C800' rx='6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui' font-weight='900' font-size='18' fill='%23111'%3EAD%3C/text%3E%3C/svg%3E"
+          alt="AD Jaraguá"
+        />
         <div>
-          <span style={{ marginRight: 12 }}>{user.email}</span>
-          <button className="btn-secondary" onClick={() => signOut(auth)}>
-            Sair
-          </button>
+          <div className="hdr-name">AD JARAGUÁ</div>
+          <div className="hdr-sub">Associação Desportiva Jaraguá · Est. 1992</div>
         </div>
-      </div>
-      <nav>{links.map(([href, label]) => <a key={href} href={href}>{label}</a>)}</nav>
-      <hr />
-      {children}
-    </main>
+        <div className="hdr-sp" />
+        <span className="hdr-user">{user.displayName ?? user.email}</span>
+        <button className="hdr-btn" onClick={() => signOut(auth)}>
+          <i className="ti ti-logout" />
+          Sair
+        </button>
+      </header>
+
+      <nav className="nav">
+        {NAV_LINKS.map(({ href, label, icon }) => {
+          const isActive = href === "/admin" ? pathname === "/admin" : pathname?.startsWith(href);
+          return (
+            <button
+              key={href}
+              className={`nav-btn${isActive ? " active" : ""}`}
+              onClick={() => router.push(href)}
+            >
+              <i className={`ti ${icon}`} />
+              {label}
+            </button>
+          );
+        })}
+      </nav>
+
+      <main className="main">
+        {children}
+      </main>
+    </div>
   );
 }

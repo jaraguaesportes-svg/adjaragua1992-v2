@@ -23,7 +23,7 @@ export default function LoginPage() {
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "desconhecido";
       const message = err instanceof Error ? err.message : String(err);
-      setError(`Erro ao entrar com Google (${code}): ${message}`);
+      setError(`Erro (${code}): ${message}`);
     } finally {
       setLoading(false);
     }
@@ -36,54 +36,49 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/admin");
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? "Não foi possível entrar. Verifique e-mail e senha."
-          : "Erro desconhecido"
-      );
+    } catch {
+      setError("E-mail ou senha incorretos.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="container">
-      <h1>Login administrativo</h1>
-      <div className="card">
-        <button className="btn" type="button" onClick={handleGoogleLogin} disabled={loading}>
-          {loading ? "Entrando..." : "Entrar com Google"}
-        </button>
-      </div>
-
-      <p style={{ textAlign: "center", margin: "16px 0" }}>ou</p>
-
-      <form className="card" onSubmit={handleSubmit}>
-        <label>
-          E-mail
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          Senha
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-        {error && <p className="error">{error}</p>}
-        <div className="actions">
-          <button className="btn-secondary" type="submit" disabled={loading}>
-            {loading ? "Entrando..." : "Entrar com e-mail e senha"}
-          </button>
+    <div className="app" style={{ justifyContent: "center", alignItems: "center" }}>
+      <div style={{ width: "100%", maxWidth: 400, padding: 24 }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "var(--pr)" }}>AD JARAGUÁ</div>
+          <div style={{ fontSize: 12, color: "var(--tx3)", marginTop: 4 }}>Associação Desportiva Jaraguá · Est. 1992</div>
         </div>
-      </form>
-    </main>
+
+        <div className="card">
+          <button className="btn" style={{ width: "100%", marginBottom: 16 }} onClick={handleGoogleLogin} disabled={loading}>
+            <i className="ti ti-brand-google" />
+            {loading ? "Entrando..." : "Entrar com Google"}
+          </button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0" }}>
+            <hr style={{ flex: 1 }} />
+            <span style={{ fontSize: 11, color: "var(--tx3)", fontWeight: 700 }}>OU</span>
+            <hr style={{ flex: 1 }} />
+          </div>
+
+          <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
+            <label>
+              E-mail
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </label>
+            <label>
+              Senha
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            </label>
+            {error && <p className="error">{error}</p>}
+            <button className="btn-secondary" type="submit" disabled={loading} style={{ width: "100%" }}>
+              {loading ? "Entrando..." : "Entrar com e-mail e senha"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }
