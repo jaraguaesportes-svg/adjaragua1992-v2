@@ -27,7 +27,10 @@ nav { display: flex; gap: 12px; flex-wrap: wrap; }
 .person-picker-option:hover { background: #f3f4f6; }
 .person-picker-selected { display: flex; align-items: center; gap: 8px; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 10px; font-size: 14px; }
 .person-picker-create { padding: 10px; border-top: 1px solid #e5e7eb; display: grid; gap: 8px; }
-.person-picker-create .hint { font-size: 12px; color: #6b7280; font-weight: 400; margin: 0; }
+.card-hover { cursor: pointer; transition: box-shadow 0.15s; }
+.card-hover:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+.count-badge { font-size: 24px; font-weight: 700; color: #111827; }
+.hint { font-size: 12px; color: #6b7280; font-weight: 400; margin: 4px 0 0; }
 .person-line-list { list-style: decimal; padding-left: 22px; margin: 0 0 10px; display: flex; flex-direction: column; gap: 4px; }
 .person-line-item { display: flex; align-items: baseline; gap: 8px; font-size: 14px; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
 .person-line-item span:first-child { font-weight: 600; }
