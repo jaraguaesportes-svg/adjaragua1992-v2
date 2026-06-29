@@ -209,7 +209,8 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
       </fieldset>
 
       <fieldset>
-        <legend>Titulares</legend>
+        <legend>AD Jaraguá</legend>
+        <label>Titulares</label>
         <Controller
           control={control}
           name="starters"
@@ -217,10 +218,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta titular..." addLabel="+ Adicionar titular" />
           )}
         />
-      </fieldset>
-
-      <fieldset>
-        <legend>Entraram</legend>
+        <label>Entraram</label>
         <Controller
           control={control}
           name="substitutes"
@@ -228,10 +226,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta reserva..." addLabel="+ Adicionar reserva" />
           )}
         />
-      </fieldset>
-
-      <fieldset>
-        <legend>Jogaram</legend>
+        <label>Jogaram</label>
         <Controller
           control={control}
           name="participated"
@@ -239,37 +234,19 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar pessoa..." addLabel="+ Adicionar participante" />
           )}
         />
+        <label>Técnico</label>
+        <Controller
+          control={control}
+          name="coachId"
+          render={({ field }) => (
+            <PersonPicker value={field.value} onChange={field.onChange} placeholder="Buscar treinador do Jaraguá..." />
+          )}
+        />
       </fieldset>
 
       <fieldset>
-        <legend>Técnicos</legend>
-        <div className="grid grid-2">
-          <label>
-            Técnico do Jaraguá
-            <Controller
-              control={control}
-              name="coachId"
-              render={({ field }) => (
-                <PersonPicker value={field.value} onChange={field.onChange} placeholder="Buscar treinador do Jaraguá..." />
-              )}
-            />
-          </label>
-          <label>
-            Técnico adversário
-            <Controller
-              control={control}
-              name="opponentCoachId"
-              render={({ field }) => (
-                <PersonPicker value={field.value} onChange={field.onChange} placeholder="Buscar treinador adversário..." />
-              )}
-            />
-          </label>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Escalação do Adversário</legend>
-        <label>Iniciaram (adversário)</label>
+        <legend>Adversário</legend>
+        <label>Iniciaram</label>
         <Controller
           control={control}
           name="opponentStarters"
@@ -277,7 +254,7 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta adversário titular..." addLabel="+ Adicionar titular adversário" />
           )}
         />
-        <label>Entraram (adversário)</label>
+        <label>Entraram</label>
         <Controller
           control={control}
           name="opponentSubstitutes"
@@ -285,12 +262,20 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar atleta adversário reserva..." addLabel="+ Adicionar reserva adversário" />
           )}
         />
-        <label>Jogaram (adversário)</label>
+        <label>Jogaram</label>
         <Controller
           control={control}
           name="opponentParticipated"
           render={({ field }) => (
             <PersonMultiPicker value={field.value ?? []} onChange={field.onChange} placeholder="Buscar pessoa adversária..." addLabel="+ Adicionar participante adversário" />
+          )}
+        />
+        <label>Técnico</label>
+        <Controller
+          control={control}
+          name="opponentCoachId"
+          render={({ field }) => (
+            <PersonPicker value={field.value} onChange={field.onChange} placeholder="Buscar treinador adversário..." />
           )}
         />
       </fieldset>
