@@ -1,8 +1,51 @@
 {
   "indexes": [
-    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "editionId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" } ] },
-    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "opponentId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" } ] },
-    { "collectionGroup": "people", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "primaryRole", "order": "ASCENDING" }, { "fieldPath": "nickname", "order": "ASCENDING" } ] }
+    { "collectionGroup": "people", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "primaryRole", "order": "ASCENDING" }, { "fieldPath": "nickname", "order": "ASCENDING" }] },
+    { "collectionGroup": "people", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "playerPosition", "order": "ASCENDING" }, { "fieldPath": "nickname", "order": "ASCENDING" }] },
+    { "collectionGroup": "people", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "birthCityId", "order": "ASCENDING" }, { "fieldPath": "nickname", "order": "ASCENDING" }] },
+    { "collectionGroup": "people", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "identificationStatus", "order": "ASCENDING" }, { "fieldPath": "primaryRole", "order": "ASCENDING" }] },
+
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "editionId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] },
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "competitionId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] },
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "opponentId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] },
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "venueId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] },
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "cityId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] },
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "result", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] },
+    { "collectionGroup": "games", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "homeAway", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] },
+
+    { "collectionGroup": "competitions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "competitionType", "order": "ASCENDING" }, { "fieldPath": "level", "order": "ASCENDING" }] },
+    { "collectionGroup": "competitions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "level", "order": "ASCENDING" }, { "fieldPath": "active", "order": "ASCENDING" }] },
+    { "collectionGroup": "competitions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "sport", "order": "ASCENDING" }, { "fieldPath": "active", "order": "ASCENDING" }] },
+
+    { "collectionGroup": "editions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "competitionId", "order": "ASCENDING" }, { "fieldPath": "year", "order": "DESCENDING" }] },
+    { "collectionGroup": "editions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "competitionId", "order": "ASCENDING" }, { "fieldPath": "titleWon", "order": "ASCENDING" }] },
+    { "collectionGroup": "editions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "year", "order": "DESCENDING" }, { "fieldPath": "finalPosition", "order": "ASCENDING" }] },
+    { "collectionGroup": "editions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "category", "order": "ASCENDING" }, { "fieldPath": "year", "order": "DESCENDING" }] },
+
+    { "collectionGroup": "opponents", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "cityId", "order": "ASCENDING" }, { "fieldPath": "active", "order": "ASCENDING" }] },
+    { "collectionGroup": "opponents", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "country", "order": "ASCENDING" }, { "fieldPath": "state", "order": "ASCENDING" }] },
+    { "collectionGroup": "opponents", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "sport", "order": "ASCENDING" }, { "fieldPath": "active", "order": "ASCENDING" }] },
+
+    { "collectionGroup": "venues", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "cityId", "order": "ASCENDING" }, { "fieldPath": "venueType", "order": "ASCENDING" }] },
+    { "collectionGroup": "venues", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "cityId", "order": "ASCENDING" }, { "fieldPath": "active", "order": "ASCENDING" }] },
+    { "collectionGroup": "venues", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "venueType", "order": "ASCENDING" }, { "fieldPath": "active", "order": "ASCENDING" }] },
+
+    { "collectionGroup": "cities", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "state", "order": "ASCENDING" }, { "fieldPath": "country", "order": "ASCENDING" }] },
+    { "collectionGroup": "cities", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "country", "order": "ASCENDING" }, { "fieldPath": "region", "order": "ASCENDING" }] },
+    { "collectionGroup": "cities", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "region", "order": "ASCENDING" }, { "fieldPath": "name", "order": "ASCENDING" }] },
+
+    { "collectionGroup": "sources", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "sourceType", "order": "ASCENDING" }, { "fieldPath": "publicationDate", "order": "DESCENDING" }] },
+    { "collectionGroup": "sources", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "sourceAuthority", "order": "ASCENDING" }, { "fieldPath": "sourceType", "order": "ASCENDING" }] },
+    { "collectionGroup": "sources", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "sourceType", "order": "ASCENDING" }, { "fieldPath": "extractionStatus", "order": "ASCENDING" }] },
+
+    { "collectionGroup": "photos", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "photoType", "order": "ASCENDING" }, { "fieldPath": "captureDate", "order": "DESCENDING" }] },
+    { "collectionGroup": "photos", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "identificationStatus", "order": "ASCENDING" }, { "fieldPath": "photoType", "order": "ASCENDING" }] },
+    { "collectionGroup": "photos", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "historicalImportance", "order": "DESCENDING" }, { "fieldPath": "photoType", "order": "ASCENDING" }] },
+
+    { "collectionGroup": "audits", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "entityType", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] },
+    { "collectionGroup": "audits", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "userId", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] },
+    { "collectionGroup": "audits", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "action", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] },
+    { "collectionGroup": "audits", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "severity", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] }
   ],
   "fieldOverrides": []
 }
