@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="hdr">
         <img
           className="hdr-logo"
-          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23F5C800' rx='6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui' font-weight='900' font-size='18' fill='%23111'%3EAD%3C/text%3E%3C/svg%3E"
+          src="/logo.png"
           alt="AD Jaraguá"
         />
         <div>

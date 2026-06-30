@@ -47,6 +47,7 @@ export default function LoginPage() {
     <div className="app" style={{ justifyContent: "center", alignItems: "center" }}>
       <div style={{ width: "100%", maxWidth: 400, padding: 24 }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <img src="/logo.png" alt="AD Jaraguá" style={{ height: 60, marginBottom: 12 }} />
           <div style={{ fontSize: 28, fontWeight: 900, color: "var(--pr)" }}>AD JARAGUÁ</div>
           <div style={{ fontSize: 12, color: "var(--tx3)", marginTop: 4 }}>Associação Desportiva Jaraguá · Est. 1992</div>
         </div>
