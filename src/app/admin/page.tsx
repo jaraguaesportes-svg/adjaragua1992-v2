@@ -22,6 +22,7 @@ const COLLECTIONS = [
   { key: "venues", label: "Locais", href: "/admin/venues" },
   { key: "cities", label: "Cidades", href: "/admin/cities" },
   { key: "sources", label: "Fontes", href: "/admin/sources" },
+  { key: "photos", label: "Fotos", href: "/admin/photos" },
 ] as const;
 
 export default function AdminPage() {

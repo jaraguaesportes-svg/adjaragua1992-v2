@@ -111,3 +111,12 @@ hr { border: none; border-top: 1px solid var(--bd2); margin: 12px 0; }
   table { font-size: 12px; }
   th, td { padding: 7px 8px; }
 }
+
+/* ── PHOTO GALLERY ───────────────────────────────────────── */
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
+.photo-card { border: 1px solid var(--bd2); border-radius: var(--r); overflow: hidden; background: #fff; }
+.photo-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--bg); }
+.photo-info { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.photo-info strong { font-size: 13px; color: var(--tx); }
+.photo-info span { font-size: 11px; color: var(--tx3); }
+.photo-actions { padding: 6px 10px; border-top: 1px solid var(--bd2); display: flex; gap: 8px; }

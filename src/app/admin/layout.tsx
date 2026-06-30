@@ -18,6 +18,7 @@ const NAV_LINKS = [
   { href: "/admin/venues", label: "Locais", icon: "ti-building-stadium" },
   { href: "/admin/cities", label: "Cidades", icon: "ti-map-pin" },
   { href: "/admin/sources", label: "Fontes", icon: "ti-file-description" },
+  { href: "/admin/photos", label: "Fotos", icon: "ti-photo" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
