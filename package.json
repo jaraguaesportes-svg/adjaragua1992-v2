@@ -17,7 +17,8 @@
     "react": "latest",
     "react-dom": "latest",
     "react-hook-form": "latest",
-    "zod": "latest"
+    "zod": "latest",
+    "xlsx": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",

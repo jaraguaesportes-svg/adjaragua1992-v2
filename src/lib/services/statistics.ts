@@ -51,33 +51,33 @@ export async function recalculatePersonStatistics(personId: string, allGames?: G
  * (titulares, reservas, demais participantes e autores de gol).
  * Deve ser chamado após criar, editar, arquivar ou restaurar um jogo.
  */
-export async function recalculateStatisticsForGameParticipants(game: Partial<Game>) {
+export async function recalculateStatisticsForGameParticipants(game: Partial<Game>, allGames?: Game[]) {
   const ids = new Set<string>();
   game.starters?.forEach((id) => ids.add(id));
   game.substitutes?.forEach((id) => ids.add(id));
   game.participated?.forEach((id) => ids.add(id));
   game.goals?.forEach((g) => ids.add(g.personId));
 
-  const allGames = await listCollection<Game>("games");
+  const games = allGames ?? await listCollection<Game>("games");
   for (const personId of ids) {
     if (!personId) continue;
-    await recalculatePersonStatistics(personId, allGames);
+    await recalculatePersonStatistics(personId, games);
   }
 
   if (game.competitionId) {
-    await recalculateCompetitionStatistics(game.competitionId, allGames);
+    await recalculateCompetitionStatistics(game.competitionId, games);
   }
   if (game.editionId) {
-    await recalculateEditionStatistics(game.editionId, allGames);
+    await recalculateEditionStatistics(game.editionId, games);
   }
   if (game.opponentId) {
-    await recalculateOpponentStatistics(game.opponentId, allGames);
+    await recalculateOpponentStatistics(game.opponentId, games);
   }
   if (game.venueId) {
-    await recalculateVenueStatistics(game.venueId, allGames);
+    await recalculateVenueStatistics(game.venueId, games);
   }
   if (game.cityId) {
-    await recalculateCityStatistics(game.cityId, allGames);
+    await recalculateCityStatistics(game.cityId, games);
   }
 }
 
