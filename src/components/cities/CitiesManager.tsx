@@ -1,137 +1,145 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { archiveDocument, createDocument, listCollection, restoreDocument, upsertDocument } from "@/lib/services/firestore";
 import type { City } from "@/types/cities";
 import { deriveCitySlug, type CityInput } from "@/lib/schemas/cities";
 import { CityForm } from "./CityForm";
+import type { Game } from "@/types/games";
+
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 function buildPayload(data: CityInput) {
-  return {
-    ...data,
-    slug: deriveCitySlug(data.name),
-  };
+  return { ...data, slug: deriveCitySlug(data.name) };
 }
 
 export function CitiesManager() {
-  const [items, setItems] = useState<City[]>([]);
+  const [items,   setItems]   = useState<City[]>([]);
+  const [games,   setGames]   = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editing, setEditing] = useState<City | null>(null);
-  const [showForm, setShowForm] = useState(false);
+  const [view,    setView]    = useState<"list"|"detail"|"form">("list");
+  const [selected, setSelected] = useState<City | null>(null);
+  const [editing,  setEditing]  = useState<City | null>(null);
+  const [query,  setQuery]    = useState("");
+  const [letter, setLetter]   = useState("Todos");
 
   async function refresh() {
     setLoading(true);
-    setError(null);
-    try {
-      const data = await listCollection<City>("cities");
-      setItems(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar cidades");
-    } finally {
-      setLoading(false);
-    }
+    const [cs, gs] = await Promise.all([listCollection<City>("cities"), listCollection<Game>("games")]);
+    setItems(cs); setGames(gs); setLoading(false);
+  }
+  useEffect(() => { refresh(); }, []);
+
+  const filtered = useMemo(() => items
+    .filter(c => c.status === "active")
+    .filter(c => {
+      if (letter === "Todos") return true;
+      if (letter === "#") return /^[^A-Za-zÀ-ÖØ-öø-ÿ]/.test(c.name);
+      return c.name.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").startsWith(letter);
+    })
+    .filter(c => !query || c.name.toLowerCase().includes(query.toLowerCase()))
+    .sort((a,b) => a.name.localeCompare(b.name,"pt-BR"))
+  , [items, letter, query]);
+
+  function cityGames(id: string) {
+    return games.filter(g => g.status==="active" && g.cityId===id).sort((a,b)=>(b.date??"").localeCompare(a.date??""));
   }
 
-  useEffect(() => {
-    refresh();
-  }, []);
+  function openDetail(c: City) { setSelected(c); setView("detail"); }
+  function openNew()  { setEditing(null); setView("form"); }
+  function openEdit(c: City) { setEditing(c); setView("form"); }
+  function back() { setView("list"); setSelected(null); setEditing(null); }
 
-  async function handleCreate(data: CityInput) {
-    await createDocument("cities", buildPayload(data), data.name);
-    setShowForm(false);
-    await refresh();
-  }
-
+  async function handleCreate(data: CityInput) { await createDocument("cities", buildPayload(data), data.name); await refresh(); setView("list"); }
   async function handleUpdate(data: CityInput) {
     if (!editing) return;
-    await upsertDocument("cities", editing.id, buildPayload(data), {
-      entityName: data.name,
-      before: editing,
-    });
-    setEditing(null);
-    await refresh();
+    await upsertDocument("cities", editing.id, buildPayload(data), { entityName: data.name, before: editing });
+    await refresh(); setView("list");
+  }
+  async function handleArchive(c: City) {
+    if (!confirm(`Arquivar "${c.name}"?`)) return;
+    await archiveDocument("cities", c.id, c.name); await refresh(); setView("list");
+  }
+  async function handleRestore(c: City) { await restoreDocument("cities", c.id, c.name); await refresh(); }
+
+  if (view === "detail" && selected) {
+    const cg = cityGames(selected.id);
+    const s  = selected.statistics;
+    return (
+      <div style={{ maxWidth:960 }}>
+        <button className="back-btn" onClick={back}><i className="ti ti-arrow-left" /> Voltar</button>
+        <div className="ficha-hdr">
+          <h2>{selected.name} — {selected.stateCode ?? selected.state}</h2>
+          <div className="ficha-actions">
+            <button className="btn-link" style={{ color:"#fff" }} onClick={()=>openEdit(selected)}><i className="ti ti-pencil" /> Editar</button>
+            {selected.status==="archived"
+              ? <button className="btn-link" style={{ color:"#fff" }} onClick={()=>handleRestore(selected)}><i className="ti ti-refresh" /> Restaurar</button>
+              : <button className="btn-link" style={{ color:"#fca5a5" }} onClick={()=>handleArchive(selected)}><i className="ti ti-archive" /> Arquivar</button>}
+          </div>
+        </div>
+        <div className="stats-bar" style={{ gridTemplateColumns:"repeat(6,1fr)" }}>
+          {[["Jogos",s?.games??0,""],["V",s?.wins??0,"var(--green)"],["E",s?.draws??0,""],["D",s?.losses??0,"var(--red)"],["Casa",selected.gameStatistics?.homeGames??0,""],["Fora",selected.gameStatistics?.awayGames??0,""]].map(([l,v,c]) => (
+            <div key={l as string} className="stat-cell"><div className="stat-val" style={{ color:c as string||"var(--tx)" }}>{v}</div><div className="stat-lbl">{l}</div></div>
+          ))}
+        </div>
+        <div className="ficha-body">
+          <div className="ficha-col">
+            <div className="fsec">Dados</div>
+            <div className="frow"><span className="frow-lbl">Estado</span><span>{selected.state}</span></div>
+            <div className="frow"><span className="frow-lbl">País</span><span>{selected.country}</span></div>
+            {selected.region && <div className="frow"><span className="frow-lbl">Região</span><span>{selected.region}</span></div>}
+            {selected.population && <div className="frow"><span className="frow-lbl">População</span><span>{selected.population.toLocaleString("pt-BR")}</span></div>}
+          </div>
+          <div className="ficha-col">
+            <div className="fsec">Jogos na cidade ({cg.length})</div>
+            {cg.slice(0,50).map(g=>(
+              <div key={g.id} className="frow" style={{ fontSize:13 }}>
+                <span style={{ whiteSpace:"nowrap" }}>{g.date}</span>
+                <span style={{ color:"var(--tx3)",fontSize:11 }}>{g.opponentName??g.opponentId}</span>
+                <span className={`badge ${g.result==="win"?"b-green":g.result==="loss"?"b-red":"b-gray"}`} style={{ fontSize:10 }}>{g.jaraguaGoals}×{g.opponentGoals}</span>
+              </div>
+            ))}
+            {cg.length>50 && <p className="hint">...e mais {cg.length-50} jogos.</p>}
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  async function handleArchive(item: City) {
-    if (!confirm(`Arquivar "${item.name}"?`)) return;
-    await archiveDocument("cities", item.id, item.name);
-    await refresh();
-  }
-
-  async function handleRestore(item: City) {
-    await restoreDocument("cities", item.id, item.name);
-    await refresh();
+  if (view === "form") {
+    return (
+      <div style={{ maxWidth:900 }}>
+        <button className="back-btn" onClick={back}><i className="ti ti-arrow-left" /> Voltar</button>
+        <CityForm initialValues={editing??undefined} onSubmit={editing?handleUpdate:handleCreate} onCancel={back} />
+      </div>
+    );
   }
 
   return (
-    <section className="card">
-      <div className="actions">
-        <h2>Cidades</h2>
-        <button className="btn" onClick={() => { setEditing(null); setShowForm((v) => !v); }}>
-          {showForm ? "Fechar" : "Novo registro"}
-        </button>
+    <div>
+      <div className="sec-hdr">
+        <div className="sec-title"><i className="ti ti-map-pin" />Cidades <span className="cbadge">{filtered.length}</span></div>
+        <div className="page-actions"><button className="btn" onClick={openNew}><i className="ti ti-plus" /> Nova cidade</button></div>
       </div>
-
-      {showForm && !editing && (
-        <CityForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
-      )}
-
-      {editing && (
-        <CityForm
-          initialValues={editing}
-          onSubmit={handleUpdate}
-          onCancel={() => setEditing(null)}
-        />
-      )}
-
-      {loading && <p>Carregando...</p>}
-      {error && <p className="error">{error}</p>}
-
-      {!loading && !error && (
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>UF</th>
-              <th>Jogos</th>
-              <th>Locais</th>
-              <th>Status</th>
-              <th></th>
+      <div className="filters"><input placeholder="Buscar pelo nome..." value={query} onChange={e=>setQuery(e.target.value)} style={{ maxWidth:280 }} /></div>
+      <div className="alpha-bar">
+        {["Todos",...LETTERS,"#"].map(l=><button key={l} className={letter===l?"on":""} onClick={()=>setLetter(l)}>{l==="Todos"?"Todos":l}</button>)}
+      </div>
+      {loading && <p style={{ color:"var(--tx3)",padding:24 }}>Carregando...</p>}
+      {!loading && filtered.length===0 && <div className="empty-s"><i className="ti ti-map-pin" /><p>Nenhuma cidade encontrada</p></div>}
+      {!loading && filtered.length>0 && (
+        <div className="tbl-wrap"><table>
+          <thead><tr><th>Nome</th><th>UF</th><th>País</th><th>Jogos</th></tr></thead>
+          <tbody>{filtered.map(c=>(
+            <tr key={c.id} onClick={()=>openDetail(c)}>
+              <td><strong>{c.name}</strong></td>
+              <td style={{ color:"var(--tx3)" }}>{c.stateCode??c.state}</td>
+              <td style={{ color:"var(--tx3)",fontSize:12 }}>{c.country}</td>
+              <td>{c.statistics?.games??0}</td>
             </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{item.stateCode ?? item.state}</td>
-                <td>{item.statistics?.games ?? 0}</td>
-                <td>{item.venueStatistics?.venues ?? 0}</td>
-                <td>{item.status}</td>
-                <td>
-                  <button className="btn-link" onClick={() => { setShowForm(false); setEditing(item); }}>
-                    Editar
-                  </button>
-                  {item.status === "archived" ? (
-                    <button className="btn-link" onClick={() => handleRestore(item)}>
-                      Restaurar
-                    </button>
-                  ) : (
-                    <button className="btn-link" onClick={() => handleArchive(item)}>
-                      Arquivar
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {items.length === 0 && (
-              <tr>
-                <td colSpan={6}>Nenhuma cidade cadastrada ainda.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+          ))}</tbody>
+        </table></div>
       )}
-    </section>
+    </div>
   );
 }
