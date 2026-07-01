@@ -9,6 +9,8 @@ import { PersonMultiPicker } from "@/components/people/PersonMultiPicker";
 import { OpponentPicker } from "@/components/opponents/OpponentPicker";
 import { VenuePicker } from "@/components/venues/VenuePicker";
 import { CityPicker } from "@/components/cities/CityPicker";
+import { CompetitionPicker } from "@/components/competitions/CompetitionPicker";
+import { EditionPicker } from "@/components/editions/EditionPicker";
 
 type GameFormProps = {
   initialValues?: Game;
@@ -104,13 +106,25 @@ export function GameForm({ initialValues, onSubmit, onCancel }: GameFormProps) {
         <legend>Evento</legend>
         <div className="grid grid-2">
           <label>
-            Competição (ID) *
-            <input {...register("competitionId")} placeholder="ID da coleção competitions" />
+            Competição *
+            <Controller
+              control={control}
+              name="competitionId"
+              render={({ field }) => (
+                <CompetitionPicker value={field.value} onChange={(v) => field.onChange(v ?? "")} />
+              )}
+            />
             {errors.competitionId && <span className="error">{errors.competitionId.message}</span>}
           </label>
           <label>
-            Edição (ID) *
-            <input {...register("editionId")} placeholder="ID da coleção editions" />
+            Edição *
+            <Controller
+              control={control}
+              name="editionId"
+              render={({ field }) => (
+                <EditionPicker value={field.value} onChange={(v) => field.onChange(v ?? "")} />
+              )}
+            />
             {errors.editionId && <span className="error">{errors.editionId.message}</span>}
           </label>
         </div>
