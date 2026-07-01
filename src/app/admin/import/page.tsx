@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
 import { importGamesFromRows, type ImportProgress } from "@/lib/services/importGames";
+import { resetDatabase } from "@/lib/services/resetDatabase";
 
 export default function ImportPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -10,6 +11,9 @@ export default function ImportPage() {
   const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
+  const [resetLog, setResetLog] = useState<string[]>([]);
+  const [resetting, setResetting] = useState(false);
+  const [resetDone, setResetDone] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(f: File) {
@@ -22,6 +26,22 @@ export default function ImportPage() {
     const ws = wb.Sheets[wb.SheetNames[0]];
     const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: null });
     setRows(data);
+  }
+
+  async function handleReset() {
+    if (!confirm("ATENÇÃO: Isso vai apagar TODOS os dados do Firestore (jogos, pessoas, adversários, locais, cidades, competições, fontes, fotos e auditorias). Essa ação é IRREVERSÍVEL. Confirmar?")) return;
+    if (!confirm("Tem certeza absoluta? Não há como desfazer.")) return;
+    setResetting(true);
+    setResetDone(false);
+    setResetLog([]);
+    try {
+      await resetDatabase((msg) => setResetLog((prev) => [...prev, msg]));
+      setResetDone(true);
+    } catch (err) {
+      setResetLog((prev) => [...prev, `Erro: ${err instanceof Error ? err.message : String(err)}`]);
+    } finally {
+      setResetting(false);
+    }
   }
 
   async function handleImport() {
@@ -49,7 +69,35 @@ export default function ImportPage() {
       </p>
 
       <fieldset>
-        <legend>Arquivo</legend>
+        <legend>1. Zerar base de dados</legend>
+        <p className="hint" style={{ marginBottom: 10 }}>
+          Apaga todos os registros existentes antes de importar. Faça isso se houver dados de teste que não devem entrar na base definitiva.
+        </p>
+        <button
+          className="btn-secondary"
+          onClick={handleReset}
+          disabled={resetting || running}
+          style={{ borderColor: "var(--red)", color: "var(--red)" }}
+        >
+          <i className="ti ti-trash" />
+          {resetting ? "Apagando..." : "Zerar toda a base de dados"}
+        </button>
+        {resetLog.length > 0 && (
+          <div style={{ marginTop: 10 }}>
+            {resetLog.map((l, i) => (
+              <p key={i} className="hint">{l}</p>
+            ))}
+            {resetDone && (
+              <p style={{ color: "var(--green)", fontWeight: 700, marginTop: 6 }}>
+                <i className="ti ti-circle-check" /> Base zerada. Pode importar agora.
+              </p>
+            )}
+          </div>
+        )}
+      </fieldset>
+
+      <fieldset>
+        <legend>2. Selecionar arquivo</legend>
         <input
           ref={fileRef}
           type="file"
@@ -63,16 +111,17 @@ export default function ImportPage() {
       </fieldset>
 
       {rows && !running && !done && (
-        <div className="actions" style={{ marginTop: 16 }}>
+        <fieldset>
+          <legend>3. Importar</legend>
           <button className="btn" onClick={handleImport}>
             <i className="ti ti-database-import" />
             Iniciar importação ({rows.length} jogos)
           </button>
-        </div>
+        </fieldset>
       )}
 
       {(running || done) && progress && (
-        <fieldset style={{ marginTop: 16 }}>
+        <fieldset style={{ marginTop: 4 }}>
           <legend>Progresso</legend>
           <p style={{ marginBottom: 8 }}>{progress.phase}</p>
           <div style={{ background: "var(--bg2)", borderRadius: 6, height: 12, overflow: "hidden", marginBottom: 8 }}>
@@ -83,7 +132,7 @@ export default function ImportPage() {
           {done && (
             <p style={{ marginTop: 12, color: "var(--green)", fontWeight: 700 }}>
               <i className="ti ti-circle-check" /> Importação concluída!
-              {progress.errors.length > 0 && ` (${progress.errors.length} erros)`}
+              {progress.errors.length > 0 && ` (${progress.errors.length} avisos)`}
             </p>
           )}
 
