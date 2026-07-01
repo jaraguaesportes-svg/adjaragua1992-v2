@@ -11,7 +11,7 @@ const COLLECTIONS = [
   "editions",
   "sources",
   "photos",
-  "audits",
+  // audits são imutáveis por design (Volume V 11.1) — não apagar
 ];
 
 /**
